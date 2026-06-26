@@ -1,0 +1,44 @@
+.btn {
+  min-height: var(--touch);
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-md);
+  font-size: var(--f-md);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  transition: background 0.12s, opacity 0.12s;
+  user-select: none;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.block {
+  width: 100%;
+}
+
+.primary {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+.primary:active {
+  background: var(--c-primary-press);
+}
+
+.ghost {
+  background: var(--c-surface-2);
+  color: var(--c-text);
+}
+
+.danger {
+  background: transparent;
+  color: var(--c-danger);
+}
