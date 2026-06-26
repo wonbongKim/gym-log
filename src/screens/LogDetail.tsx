@@ -1,5 +1,6 @@
-import { X, Check } from 'lucide-react'
+import { X, Check, Copy } from 'lucide-react'
 import { logStats } from '../lib/workout'
+import { useClipboard } from '../hooks/useClipboard'
 import type { WorkoutLog } from '../types'
 import editor from './RoutineEditor.module.css'
 import styles from './LogDetail.module.css'
@@ -12,6 +13,7 @@ export function LogDetail({
   onClose: () => void
 }) {
   const { totalSets, totalVolume } = logStats(log.exercises)
+  const { copied, copy } = useClipboard()
 
   return (
     <div className={editor.overlay}>
@@ -20,7 +22,20 @@ export function LogDetail({
           <X size={22} />
         </button>
         <h2 className={editor.topTitle}>{log.date}</h2>
-        <span style={{ minWidth: 48 }} />
+        <button
+          className={editor.saveText}
+          onClick={() => copy(JSON.stringify(log, null, 2))}
+        >
+          {copied ? (
+            <>
+              <Check size={16} /> 복사됨
+            </>
+          ) : (
+            <>
+              <Copy size={16} /> 복사
+            </>
+          )}
+        </button>
       </header>
 
       <div className={editor.body}>
