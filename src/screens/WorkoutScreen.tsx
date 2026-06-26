@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { X, Plus, Trash2, Check, Dumbbell } from 'lucide-react'
+import { ChevronDown, Plus, Trash2, Check, Dumbbell } from 'lucide-react'
 import { Button } from '../components/Button'
 import { useLogs, useSession } from '../hooks/useStores'
 import { sessionToLog, summarizeSets } from '../lib/workout'
@@ -7,7 +7,7 @@ import type { SetRecord, WorkoutSession } from '../types'
 import editor from './RoutineEditor.module.css'
 import styles from './WorkoutScreen.module.css'
 
-export function WorkoutScreen() {
+export function WorkoutScreen({ onMinimize }: { onMinimize: () => void }) {
   const { session, setSession } = useSession()
   const { addLog, lastRecordOf } = useLogs()
 
@@ -73,11 +73,18 @@ export function WorkoutScreen() {
     setSession(null)
   }
 
+  // 진행 내용은 세트 입력 시 이미 저장돼 있으므로, 최소화는 그냥 닫기
+  const handleMinimize = () => onMinimize()
+
   return (
     <div className={editor.overlay}>
       <header className={editor.topbar}>
-        <button className={editor.iconBtn} onClick={handleCancel} aria-label="취소">
-          <X size={22} />
+        <button
+          className={editor.iconBtn}
+          onClick={handleMinimize}
+          aria-label="최소화"
+        >
+          <ChevronDown size={22} />
         </button>
         <div className={styles.topInfo}>
           <span className={styles.topName}>{session.routineName}</span>
@@ -174,6 +181,9 @@ export function WorkoutScreen() {
         <Button block onClick={handleFinish}>
           <Check size={18} /> 운동 종료 · 기록 저장
         </Button>
+        <button className={styles.cancelLink} onClick={handleCancel}>
+          운동 취소(저장 안 함)
+        </button>
       </div>
     </div>
   )

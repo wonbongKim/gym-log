@@ -117,3 +117,12 @@ export function useSession() {
 
   return { session: store.session, setSession }
 }
+
+/** 종목 id → 이름 매핑 (마스터 기준) */
+export function useExerciseNameOf() {
+  const { exercises } = useExercises()
+  return useCallback(
+    (id: string) => exercises.find((e) => e.id === id)?.name ?? '',
+    [exercises],
+  )
+}

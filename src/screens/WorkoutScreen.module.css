@@ -156,3 +156,16 @@
 .addSet:active {
   background: var(--c-surface-2);
 }
+
+.cancelLink {
+  display: block;
+  width: 100%;
+  padding: var(--sp-3);
+  margin-top: var(--sp-1);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+  text-align: center;
+}
+.cancelLink:active {
+  color: var(--c-danger);
+}

@@ -2,14 +2,9 @@ import { useMemo, useState } from 'react'
 import { Plus, Pencil, Trash2, Dumbbell, Braces, Code, Play } from 'lucide-react'
 import { Button } from '../components/Button'
 import { formatDays } from '../lib/days'
-import {
-  useExercises,
-  useLogs,
-  useRoutines,
-  useSession,
-} from '../hooks/useStores'
+import { useExercises, useRoutines } from '../hooks/useStores'
+import { useStartWorkout } from '../hooks/useStartWorkout'
 import { routineToImportJson, routinesToImportJson } from '../lib/routineExport'
-import { seedSession } from '../lib/workout'
 import type { Routine } from '../types'
 import { RoutineEditor } from './RoutineEditor'
 import { RoutineImport } from './RoutineImport'
@@ -20,8 +15,7 @@ import list from './RoutinesScreen.module.css'
 export function RoutinesScreen() {
   const { routines, remove } = useRoutines()
   const { exercises } = useExercises()
-  const { lastRecordOf } = useLogs()
-  const { session, setSession } = useSession()
+  const startWorkout = useStartWorkout()
   const [editing, setEditing] = useState<Routine | null | undefined>(undefined)
   // undefined = 닫힘, null = 새로 추가, Routine = 수정
   const [importing, setImporting] = useState(false)
@@ -41,15 +35,7 @@ export function RoutinesScreen() {
   }
 
   const handleStart = (r: Routine) => {
-    if (
-      session &&
-      !confirm(
-        '진행 중인 운동이 있어요.\n새 운동을 시작하면 기존 진행 내용이 사라집니다. 계속할까요?',
-      )
-    ) {
-      return
-    }
-    setSession(seedSession(r, nameOf, lastRecordOf))
+    startWorkout(r)
   }
 
   return (
