@@ -1,9 +1,15 @@
 import { useMemo, useState } from 'react'
-import { Plus, Pencil, Trash2, Dumbbell, Braces, Code } from 'lucide-react'
+import { Plus, Pencil, Trash2, Dumbbell, Braces, Code, Play } from 'lucide-react'
 import { Button } from '../components/Button'
 import { formatDays } from '../lib/days'
-import { useExercises, useRoutines } from '../hooks/useStores'
+import {
+  useExercises,
+  useLogs,
+  useRoutines,
+  useSession,
+} from '../hooks/useStores'
 import { routineToImportJson, routinesToImportJson } from '../lib/routineExport'
+import { seedSession } from '../lib/workout'
 import type { Routine } from '../types'
 import { RoutineEditor } from './RoutineEditor'
 import { RoutineImport } from './RoutineImport'
@@ -14,6 +20,8 @@ import list from './RoutinesScreen.module.css'
 export function RoutinesScreen() {
   const { routines, remove } = useRoutines()
   const { exercises } = useExercises()
+  const { lastRecordOf } = useLogs()
+  const { session, setSession } = useSession()
   const [editing, setEditing] = useState<Routine | null | undefined>(undefined)
   // undefined = 닫힘, null = 새로 추가, Routine = 수정
   const [importing, setImporting] = useState(false)
@@ -32,6 +40,18 @@ export function RoutinesScreen() {
     }
   }
 
+  const handleStart = (r: Routine) => {
+    if (
+      session &&
+      !confirm(
+        '진행 중인 운동이 있어요.\n새 운동을 시작하면 기존 진행 내용이 사라집니다. 계속할까요?',
+      )
+    ) {
+      return
+    }
+    setSession(seedSession(r, nameOf, lastRecordOf))
+  }
+
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
@@ -48,7 +68,11 @@ export function RoutinesScreen() {
         <ul className={list.list}>
           {routines.map((r) => (
             <li key={r.id} className={list.card}>
-              <div className={list.cardMain}>
+              <button
+                className={list.cardMain}
+                onClick={() => handleStart(r)}
+                aria-label={`${r.name} 운동 시작`}
+              >
                 <div className={list.cardTop}>
                   <span className={list.days}>{formatDays(r.days)}</span>
                 </div>
@@ -56,7 +80,10 @@ export function RoutinesScreen() {
                 <p className={list.meta}>
                   <Dumbbell size={14} /> {r.exercises.length}개 종목
                 </p>
-              </div>
+                <span className={list.startHint}>
+                  <Play size={13} /> 탭하여 운동 시작
+                </span>
+              </button>
               <div className={list.cardActions}>
                 <button
                   className={list.iconBtn}

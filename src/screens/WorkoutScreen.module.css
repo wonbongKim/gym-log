@@ -1,0 +1,150 @@
+.topInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+.topName {
+  font-size: var(--f-md);
+  font-weight: 700;
+  max-width: 60vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topMeta {
+  font-size: var(--f-xs);
+  color: var(--c-text-dim);
+}
+
+.card,
+.cardDone {
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.cardDone {
+  opacity: 0.6;
+  border-color: var(--c-primary);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  color: var(--c-text);
+}
+.cardTitle h3 {
+  font-size: var(--f-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doneBtn,
+.doneOn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-pill);
+  font-size: var(--f-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.doneBtn {
+  background: var(--c-surface-2);
+  color: var(--c-text-dim);
+}
+.doneOn {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.prev {
+  margin: var(--sp-2) 0 var(--sp-3);
+  font-size: var(--f-sm);
+  color: var(--c-accent);
+}
+
+.sets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.setHeadRow,
+.setRow {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr 44px;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.setHeadRow {
+  font-size: var(--f-xs);
+  color: var(--c-text-dim);
+}
+.colNo {
+  text-align: center;
+}
+.colNum {
+  text-align: center;
+}
+.colDel {
+  width: 44px;
+}
+
+.numInput {
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  text-align: center;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  color: var(--c-text);
+  font-size: var(--f-md);
+}
+.numInput:focus {
+  outline: none;
+  border-color: var(--c-primary);
+}
+
+.delBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  color: var(--c-text-dim);
+  border-radius: var(--r-sm);
+}
+.delBtn:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.addSet {
+  margin-top: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px dashed var(--c-border);
+  border-radius: var(--r-md);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+}
+.addSet:active {
+  background: var(--c-surface-2);
+}

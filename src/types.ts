@@ -50,6 +50,8 @@ export interface LoggedExercise {
   exerciseId: string
   exerciseName: string // snapshot
   sets: SetRecord[]
+  /** 세션 진행 중 완료 체크(기록에도 보존) */
+  done?: boolean
 }
 
 /** 운동 기록 = 사실 (gymlog_logs) */

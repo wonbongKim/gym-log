@@ -1,6 +1,13 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import { KEYS, storage, uid } from '../storage'
-import type { Exercise, ExercisesStore, Routine } from '../types'
+import type {
+  Exercise,
+  ExercisesStore,
+  LoggedExercise,
+  Routine,
+  WorkoutLog,
+  WorkoutSession,
+} from '../types'
 
 /** 종목 마스터 훅 */
 export function useExercises() {
@@ -59,4 +66,54 @@ export function useRoutines() {
   }, [])
 
   return { routines: store.routines, upsert, remove }
+}
+
+/** 운동 기록 훅 */
+export function useLogs() {
+  const store = useSyncExternalStore(
+    (cb) => storage.subscribe(KEYS.logs, cb),
+    storage.getLogs,
+  )
+
+  const addLog = useCallback((log: WorkoutLog) => {
+    const current = storage.getLogs()
+    storage.setLogs({ ...current, logs: [log, ...current.logs] })
+  }, [])
+
+  const remove = useCallback((id: string) => {
+    const current = storage.getLogs()
+    storage.setLogs({
+      ...current,
+      logs: current.logs.filter((l) => l.id !== id),
+    })
+  }, [])
+
+  /** 특정 종목의 가장 최근 기록(직전 기록)을 반환 */
+  const lastRecordOf = useCallback(
+    (exerciseId: string): { date: string; sets: LoggedExercise['sets'] } | null => {
+      const logs = [...store.logs].sort((a, b) => b.date.localeCompare(a.date))
+      for (const log of logs) {
+        const ex = log.exercises.find((e) => e.exerciseId === exerciseId)
+        if (ex && ex.sets.length > 0) return { date: log.date, sets: ex.sets }
+      }
+      return null
+    },
+    [store.logs],
+  )
+
+  return { logs: store.logs, addLog, remove, lastRecordOf }
+}
+
+/** 진행 중 운동 세션 훅 */
+export function useSession() {
+  const store = useSyncExternalStore(
+    (cb) => storage.subscribe(KEYS.session, cb),
+    storage.getSession,
+  )
+
+  const setSession = useCallback((session: WorkoutSession | null) => {
+    storage.setSession({ version: 1, session })
+  }, [])
+
+  return { session: store.session, setSession }
 }
