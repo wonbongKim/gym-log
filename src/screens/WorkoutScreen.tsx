@@ -122,7 +122,7 @@ export function WorkoutScreen() {
                 <div className={styles.setHeadRow}>
                   <span className={styles.colNo}>세트</span>
                   <span className={styles.colNum}>kg</span>
-                  <span className={styles.colNum}>reps</span>
+                  <span className={styles.colNum}>횟수</span>
                   <span className={styles.colDel} />
                 </div>
                 {ex.sets.map((set, setIdx) => (
@@ -131,7 +131,7 @@ export function WorkoutScreen() {
                     <input
                       className={styles.numInput}
                       inputMode="decimal"
-                      placeholder="맨몸"
+                      placeholder="0"
                       value={set.kg == null ? '' : set.kg}
                       onChange={(e) => {
                         const v = e.target.value.trim()
