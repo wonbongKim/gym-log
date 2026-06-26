@@ -78,3 +78,19 @@ export function summarizeSets(sets: SetRecord[]): string {
     .map((s) => `${s.kg == null ? '맨몸' : `${s.kg}kg`}×${s.reps}`)
     .join(', ')
 }
+
+/** 기록의 총 세트 수와 총 볼륨(kg×reps 합) */
+export function logStats(exercises: LoggedExercise[]): {
+  totalSets: number
+  totalVolume: number
+} {
+  let totalSets = 0
+  let totalVolume = 0
+  for (const ex of exercises) {
+    for (const s of ex.sets) {
+      totalSets += 1
+      if (s.kg != null) totalVolume += s.kg * s.reps
+    }
+  }
+  return { totalSets, totalVolume }
+}

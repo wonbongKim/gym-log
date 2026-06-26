@@ -1,0 +1,65 @@
+.summary {
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.routineName {
+  font-size: var(--f-lg);
+  word-break: keep-all;
+}
+.stats {
+  margin-top: var(--sp-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+}
+
+.exCard {
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+.exHead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.exHead h4 {
+  font-size: var(--f-md);
+  font-weight: 700;
+}
+.doneIcon {
+  color: var(--c-primary);
+}
+
+.setTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.setTable td {
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--c-border);
+  font-size: var(--f-sm);
+}
+.setTable tr:first-child td {
+  border-top: none;
+}
+.setNo {
+  color: var(--c-text-dim);
+  width: 30%;
+}
+.setKg {
+  width: 40%;
+  text-align: center;
+  font-weight: 600;
+}
+.setReps {
+  width: 30%;
+  text-align: right;
+  color: var(--c-text-dim);
+}
