@@ -1,0 +1,42 @@
+/* 디자인 토큰 — 색상/간격/타이포/모서리/터치 타깃 */
+:root {
+  /* 색상 (다크 모바일 우선) */
+  --c-bg: #0f1115;
+  --c-surface: #181b22;
+  --c-surface-2: #20242d;
+  --c-border: #2a2f3a;
+  --c-text: #e8eaed;
+  --c-text-dim: #9aa0ab;
+  --c-primary: #4f7cff;
+  --c-primary-press: #3d63d9;
+  --c-on-primary: #ffffff;
+  --c-accent: #ffb020;
+  --c-danger: #ff5470;
+
+  /* 간격 (4px 스케일) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* 모서리 */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* 터치 타깃 (한 손 엄지 조작) */
+  --touch: 48px;
+
+  /* 타이포 */
+  --f-xs: 12px;
+  --f-sm: 14px;
+  --f-md: 16px;
+  --f-lg: 20px;
+  --f-xl: 28px;
+
+  /* 그림자 */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+}

@@ -1,0 +1,29 @@
+.screen {
+  flex: 1;
+  padding: var(--sp-4);
+  overflow-y: auto;
+}
+
+.header {
+  padding: var(--sp-3) 0 var(--sp-5);
+}
+
+.title {
+  font-size: var(--f-xl);
+}
+
+.subtitle {
+  margin: var(--sp-1) 0 0;
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+}
+
+.placeholder {
+  padding: var(--sp-5);
+  background: var(--c-surface);
+  border: 1px dashed var(--c-border);
+  border-radius: var(--r-md);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+  text-align: center;
+}
