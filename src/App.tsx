@@ -1,40 +1,33 @@
-import { useEffect, useRef, useState } from 'react'
-import { TabBar, type Tab } from './components/TabBar'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { TabBar } from './components/TabBar'
 import { HomeScreen } from './screens/HomeScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { RoutinesScreen } from './screens/RoutinesScreen'
 import { WorkoutScreen } from './screens/WorkoutScreen'
 import { useSession } from './hooks/useStores'
 
-export default function App() {
-  const [tab, setTab] = useState<Tab>('home')
+/** /workout: 진행 중 세션이 있을 때만 운동 화면, 없으면 홈으로 */
+function WorkoutRoute() {
   const { session } = useSession()
-  const [workoutOpen, setWorkoutOpen] = useState(false)
+  if (!session) return <Navigate to="/" replace />
+  return <WorkoutScreen />
+}
 
-  // 새로 시작된 세션만 자동으로 연다. 앱 로드 시 이미 있던 세션은 홈의
-  // '이어하기'로 두고 자동으로 열지 않는다(최초 startedAt을 기준값으로 초기화).
-  const prevStart = useRef<string | undefined>(session?.startedAt)
-  useEffect(() => {
-    const s = session?.startedAt
-    if (s && s !== prevStart.current) setWorkoutOpen(true)
-    prevStart.current = s
-  }, [session?.startedAt])
+export default function App() {
+  const location = useLocation()
+  // 운동 화면(풀스크린)에서는 하단 탭바를 숨긴다
+  const showTabBar = location.pathname !== '/workout'
 
   return (
     <div className="app-shell">
-      {tab === 'home' && (
-        <HomeScreen
-          onNavigate={setTab}
-          onResumeWorkout={() => setWorkoutOpen(true)}
-        />
-      )}
-      {tab === 'history' && <HistoryScreen />}
-      {tab === 'routines' && <RoutinesScreen />}
-      <TabBar active={tab} onChange={setTab} />
-      {/* 진행 중 세션 + 열림 상태일 때만 풀스크린 표시(최소화 가능) */}
-      {session && workoutOpen && (
-        <WorkoutScreen onMinimize={() => setWorkoutOpen(false)} />
-      )}
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/history" element={<HistoryScreen />} />
+        <Route path="/routines" element={<RoutinesScreen />} />
+        <Route path="/workout" element={<WorkoutRoute />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      {showTabBar && <TabBar />}
     </div>
   )
 }

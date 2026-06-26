@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ChevronDown, Plus, Trash2, Check, Dumbbell } from 'lucide-react'
 import { Button } from '../components/Button'
 import { useLogs, useSession } from '../hooks/useStores'
@@ -7,7 +8,8 @@ import type { SetRecord, WorkoutSession } from '../types'
 import editor from './RoutineEditor.module.css'
 import styles from './WorkoutScreen.module.css'
 
-export function WorkoutScreen({ onMinimize }: { onMinimize: () => void }) {
+export function WorkoutScreen() {
+  const navigate = useNavigate()
   const { session, setSession } = useSession()
   const { addLog, lastRecordOf } = useLogs()
 
@@ -66,15 +68,17 @@ export function WorkoutScreen({ onMinimize }: { onMinimize: () => void }) {
     if (!confirm('운동을 종료하고 기록을 저장할까요?')) return
     addLog(sessionToLog(session))
     setSession(null)
+    navigate('/', { replace: true })
   }
 
   const handleCancel = () => {
     if (!confirm('운동을 취소할까요?\n입력한 기록이 저장되지 않습니다.')) return
     setSession(null)
+    navigate('/', { replace: true })
   }
 
-  // 진행 내용은 세트 입력 시 이미 저장돼 있으므로, 최소화는 그냥 닫기
-  const handleMinimize = () => onMinimize()
+  // 진행 내용은 세트 입력 시 이미 저장돼 있으므로, 최소화는 운동 화면만 벗어난다
+  const handleMinimize = () => navigate(-1)
 
   return (
     <div className={editor.overlay}>

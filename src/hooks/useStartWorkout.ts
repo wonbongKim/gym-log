@@ -1,13 +1,15 @@
 import { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useExerciseNameOf, useLogs, useSession } from './useStores'
 import { seedSession } from '../lib/workout'
 import type { Routine } from '../types'
 
-/** 루틴으로 운동 세션을 시작. 진행 중 세션이 있으면 확인 후 덮어쓴다. */
+/** 루틴으로 운동 세션을 시작하고 운동 화면으로 이동. 진행 중이면 확인 후 덮어쓴다. */
 export function useStartWorkout() {
   const nameOf = useExerciseNameOf()
   const { lastRecordOf } = useLogs()
   const { session, setSession } = useSession()
+  const navigate = useNavigate()
 
   return useCallback(
     (routine: Routine): boolean => {
@@ -20,8 +22,9 @@ export function useStartWorkout() {
         return false
       }
       setSession(seedSession(routine, nameOf, lastRecordOf))
+      navigate('/workout')
       return true
     },
-    [session, setSession, nameOf, lastRecordOf],
+    [session, setSession, nameOf, lastRecordOf, navigate],
   )
 }

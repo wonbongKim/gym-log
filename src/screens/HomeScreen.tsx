@@ -1,6 +1,6 @@
+import { useNavigate } from 'react-router-dom'
 import { Play, ChevronRight, Dumbbell, Moon } from 'lucide-react'
 import { Button } from '../components/Button'
-import { type Tab } from '../components/TabBar'
 import { useLogs, useRoutines, useSession } from '../hooks/useStores'
 import { useStartWorkout } from '../hooks/useStartWorkout'
 import { todayWeekDay, WEEK_DAYS } from '../lib/days'
@@ -19,13 +19,8 @@ function weekStart(d = new Date()): string {
   return localDate(mon)
 }
 
-export function HomeScreen({
-  onNavigate,
-  onResumeWorkout,
-}: {
-  onNavigate: (t: Tab) => void
-  onResumeWorkout: () => void
-}) {
+export function HomeScreen() {
+  const navigate = useNavigate()
   const { routines } = useRoutines()
   const { logs } = useLogs()
   const { session } = useSession()
@@ -55,7 +50,7 @@ export function HomeScreen({
 
       {/* 이어하기 */}
       {session && (
-        <button className={home.resume} onClick={onResumeWorkout}>
+        <button className={home.resume} onClick={() => navigate('/workout')}>
           <div className={home.resumeIcon}>
             <Play size={20} />
           </div>
@@ -80,7 +75,7 @@ export function HomeScreen({
             <p>오늘은 휴식일이에요</p>
             <button
               className={home.restLink}
-              onClick={() => onNavigate('routines')}
+              onClick={() => navigate('/routines')}
             >
               다른 루틴으로 운동하기
             </button>
@@ -112,7 +107,7 @@ export function HomeScreen({
             <h2 className={home.sectionTitle}>최근 기록</h2>
             <button
               className={home.moreLink}
-              onClick={() => onNavigate('history')}
+              onClick={() => navigate('/history')}
             >
               전체 보기 <ChevronRight size={14} />
             </button>
@@ -124,7 +119,7 @@ export function HomeScreen({
                 <li
                   key={l.id}
                   className={home.recentItem}
-                  onClick={() => onNavigate('history')}
+                  onClick={() => navigate('/history')}
                 >
                   <span className={home.recentDate}>
                     {l.date.slice(5).replace('-', '.')}
