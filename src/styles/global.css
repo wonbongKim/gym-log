@@ -4,6 +4,19 @@
   box-sizing: border-box;
 }
 
+/* 입력 요소가 기본 폭(size 속성) 때문에 컨테이너를 넘치지 않도록 */
+input,
+textarea,
+select {
+  max-width: 100%;
+  min-width: 0;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
 html,
 body,
 #root {

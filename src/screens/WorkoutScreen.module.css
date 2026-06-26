@@ -85,9 +85,14 @@
 .setHeadRow,
 .setRow {
   display: grid;
-  grid-template-columns: 44px 1fr 1fr 44px;
+  grid-template-columns: 36px 1fr 1fr 40px;
   gap: var(--sp-2);
   align-items: center;
+}
+/* grid 자식이 내용 크기 때문에 안 줄어드는 것 방지 */
+.setHeadRow > *,
+.setRow > * {
+  min-width: 0;
 }
 
 .setHeadRow {
@@ -105,6 +110,8 @@
 }
 
 .numInput {
+  width: 100%;
+  min-width: 0;
   min-height: 44px;
   padding: 0 var(--sp-2);
   text-align: center;
@@ -123,6 +130,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   height: 44px;
   color: var(--c-text-dim);
   border-radius: var(--r-sm);
