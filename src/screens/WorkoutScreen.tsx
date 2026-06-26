@@ -131,7 +131,7 @@ export function WorkoutScreen() {
                     <input
                       className={styles.numInput}
                       inputMode="decimal"
-                      placeholder="0"
+                      placeholder="0 kg"
                       value={set.kg == null ? '' : set.kg}
                       onChange={(e) => {
                         const v = e.target.value.trim()
@@ -143,7 +143,7 @@ export function WorkoutScreen() {
                     <input
                       className={styles.numInput}
                       inputMode="numeric"
-                      placeholder="0"
+                      placeholder="0 회"
                       value={set.reps === 0 ? '' : set.reps}
                       onChange={(e) => {
                         const v = e.target.value.trim()
