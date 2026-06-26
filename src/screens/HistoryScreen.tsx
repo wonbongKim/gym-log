@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
-import { Download, Upload, Trash2, ChevronRight } from 'lucide-react'
+import { Download, Upload, Trash2, ChevronRight, Code } from 'lucide-react'
 import { Button } from '../components/Button'
 import { useLogs } from '../hooks/useStores'
 import { logStats } from '../lib/workout'
+import { storage } from '../storage'
 import {
   BackupError,
   downloadBackup,
@@ -11,6 +12,7 @@ import {
 } from '../lib/backup'
 import type { WorkoutLog } from '../types'
 import { LogDetail } from './LogDetail'
+import { RoutineJsonView } from './RoutineJsonView'
 import styles from './Screen.module.css'
 import list from './HistoryScreen.module.css'
 
@@ -24,6 +26,7 @@ function dateLabel(iso: string): string {
 export function HistoryScreen() {
   const { logs, remove } = useLogs()
   const [detail, setDetail] = useState<WorkoutLog | null>(null)
+  const [jsonView, setJsonView] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleImportFile = async (file: File) => {
@@ -107,6 +110,9 @@ export function HistoryScreen() {
             <Upload size={18} /> 가져오기
           </Button>
         </div>
+        <Button variant="ghost" block onClick={() => setJsonView(true)}>
+          <Code size={18} /> JSON 보기·복사
+        </Button>
         <input
           ref={fileRef}
           type="file"
@@ -122,6 +128,13 @@ export function HistoryScreen() {
 
       {detail && (
         <LogDetail log={detail} onClose={() => setDetail(null)} />
+      )}
+      {jsonView && (
+        <RoutineJsonView
+          json={storage.exportAll()}
+          title="전체 기록 JSON"
+          onClose={() => setJsonView(false)}
+        />
       )}
     </main>
   )

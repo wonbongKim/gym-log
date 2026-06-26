@@ -86,4 +86,5 @@
   margin-top: var(--sp-2);
   display: flex;
   gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
 }
