@@ -1,28 +1,48 @@
 import { storage } from '../storage'
-import { localDate } from './workout'
+import { localDate } from './stats'
 import type { ExercisesStore, LogsStore, RoutinesStore } from '../types'
 
 export class BackupError extends Error {}
 
-interface BackupFile {
+export interface BackupFile {
   exportedAt?: string
   exercises: ExercisesStore
   routines: RoutinesStore
   logs: LogsStore
 }
 
-/** 현재 데이터를 JSON 파일로 다운로드 */
-export function downloadBackup(): void {
-  const json = storage.exportAll()
-  const blob = new Blob([json], { type: 'application/json' })
+/** 텍스트를 파일로 내려받기 */
+export function downloadText(filename: string, text: string, mime = 'application/json'): void {
+  const blob = new Blob([text], { type: `${mime};charset=utf-8` })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `gymlog-backup-${localDate()}.json`
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   a.remove()
-  URL.revokeObjectURL(url)
+  // 일부 브라우저는 클릭 직후 revoke하면 다운로드가 취소됨
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+/** 현재 데이터를 JSON 파일로 다운로드 */
+export function downloadBackup(): void {
+  downloadText(`gymlog-backup-${localDate()}.json`, storage.exportAll())
+  try {
+    const cur = storage.getSettings()
+    storage.setSettings({
+      ...cur,
+      settings: { ...cur.settings, lastBackupAt: new Date().toISOString() },
+    })
+  } catch {
+    // 용량이 가득 찬 상태에서도 다운로드 자체는 성공해야 한다
+  }
+}
+
+/** 복원 확인 메시지용 요약 */
+export function backupSummary(b: BackupFile): string {
+  const when = b.exportedAt ? new Date(b.exportedAt).toLocaleDateString('ko-KR') : '날짜 미상'
+  return `${when} 백업 · 루틴 ${b.routines.routines.length}개 · 기록 ${b.logs.logs.length}개`
 }
 
 function isStore(v: unknown, listKey: string): boolean {

@@ -1,0 +1,136 @@
+.chartCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+
+.chartHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-2) var(--sp-1) var(--sp-4);
+}
+.chartTitle {
+  font-size: var(--f-sm);
+  color: var(--c-text);
+}
+.deltaUp,
+.deltaDown {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--f-xs);
+  font-weight: 700;
+}
+.deltaUp {
+  color: var(--c-success);
+}
+.deltaDown {
+  color: var(--c-text-dim);
+}
+.deltaDown svg {
+  transform: scaleY(-1);
+}
+
+.chartEmpty {
+  margin: 0;
+  padding: var(--sp-5) var(--sp-3);
+  border: 1px dashed var(--c-border-strong);
+  border-radius: var(--r-md);
+  color: var(--c-text-faint);
+  font-size: var(--f-sm);
+  text-align: center;
+}
+
+.listTitle {
+  margin: var(--sp-2) 0 var(--sp-2);
+  font-size: var(--f-md);
+}
+.list {
+  list-style: none;
+  margin: 0 0 var(--sp-2);
+  padding: 0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.list li + li {
+  border-top: 1px solid var(--c-border);
+}
+.row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4);
+  text-align: left;
+  font-size: var(--f-sm);
+}
+.row:active {
+  background: var(--c-surface-2);
+}
+.rowDate {
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+  font-variant-numeric: tabular-nums;
+}
+.rowSets {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rowBest {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.rowChevron {
+  color: var(--c-text-faint);
+}
+
+.rowRel {
+  display: block;
+  color: var(--c-text-faint);
+  font-size: var(--f-2xs);
+}
+.rowMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.rowNote {
+  max-width: 100%;
+  color: var(--c-accent);
+  font-size: var(--f-2xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.olUp,
+.olDown,
+.olSame,
+.olFirst {
+  font-size: var(--f-2xs);
+  font-weight: 700;
+}
+.olUp {
+  color: var(--c-success);
+}
+.olDown {
+  color: var(--c-danger);
+}
+.olSame,
+.olFirst {
+  color: var(--c-text-faint);
+}

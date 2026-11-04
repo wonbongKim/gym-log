@@ -1,13 +1,15 @@
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
 import { KEYS, storage, uid } from '../storage'
 import type {
   Exercise,
   ExercisesStore,
   LoggedExercise,
   Routine,
+  Settings,
   WorkoutLog,
   WorkoutSession,
 } from '../types'
+import { compareLogsDesc } from '../lib/stats'
 
 /** 종목 마스터 훅 */
 export function useExercises() {
@@ -65,15 +67,43 @@ export function useRoutines() {
     })
   }, [])
 
-  return { routines: store.routines, upsert, remove }
+  /** 루틴 복제 (이름 뒤에 "(복사)") — 새 루틴을 반환 */
+  const duplicate = useCallback((id: string): Routine | null => {
+    const current = storage.getRoutines()
+    const src = current.routines.find((r) => r.id === id)
+    if (!src) return null
+    const copy: Routine = {
+      ...structuredClone(src),
+      id: uid('rt'),
+      name: `${src.name} (복사)`,
+    }
+    const idx = current.routines.findIndex((r) => r.id === id)
+    const routines = [...current.routines]
+    routines.splice(idx + 1, 0, copy)
+    storage.setRoutines({ ...current, routines })
+    return copy
+  }, [])
+
+  /** 삭제 되돌리기 — 원래 위치에 다시 끼워 넣는다 */
+  const restore = useCallback((routine: Routine, index: number) => {
+    const current = storage.getRoutines()
+    if (current.routines.some((r) => r.id === routine.id)) return
+    const routines = [...current.routines]
+    routines.splice(Math.min(index, routines.length), 0, routine)
+    storage.setRoutines({ ...current, routines })
+  }, [])
+
+  return { routines: store.routines, upsert, remove, duplicate, restore }
 }
 
-/** 운동 기록 훅 */
+/** 운동 기록 훅 — logs는 항상 최신순 정렬 */
 export function useLogs() {
   const store = useSyncExternalStore(
     (cb) => storage.subscribe(KEYS.logs, cb),
     storage.getLogs,
   )
+
+  const logs = useMemo(() => [...store.logs].sort(compareLogsDesc), [store.logs])
 
   const addLog = useCallback((log: WorkoutLog) => {
     const current = storage.getLogs()
@@ -90,18 +120,19 @@ export function useLogs() {
 
   /** 특정 종목의 가장 최근 기록(직전 기록)을 반환 */
   const lastRecordOf = useCallback(
-    (exerciseId: string): { date: string; sets: LoggedExercise['sets'] } | null => {
-      const logs = [...store.logs].sort((a, b) => b.date.localeCompare(a.date))
+    (
+      exerciseId: string,
+    ): { date: string; sets: LoggedExercise['sets']; note?: string } | null => {
       for (const log of logs) {
         const ex = log.exercises.find((e) => e.exerciseId === exerciseId)
-        if (ex && ex.sets.length > 0) return { date: log.date, sets: ex.sets }
+        if (ex && ex.sets.length > 0) return { date: log.date, sets: ex.sets, note: ex.note }
       }
       return null
     },
-    [store.logs],
+    [logs],
   )
 
-  return { logs: store.logs, addLog, remove, lastRecordOf }
+  return { logs, addLog, remove, lastRecordOf }
 }
 
 /** 진행 중 운동 세션 훅 */
@@ -118,11 +149,29 @@ export function useSession() {
   return { session: store.session, setSession }
 }
 
+/** 앱 설정 훅 */
+export function useSettings() {
+  const store = useSyncExternalStore(
+    (cb) => storage.subscribe(KEYS.settings, cb),
+    storage.getSettings,
+  )
+
+  const updateSettings = useCallback((patch: Partial<Settings>) => {
+    const current = storage.getSettings()
+    storage.setSettings({
+      ...current,
+      settings: { ...current.settings, ...patch },
+    })
+  }, [])
+
+  return { settings: store.settings, updateSettings }
+}
+
 /** 종목 id → 이름 매핑 (마스터 기준) */
 export function useExerciseNameOf() {
   const { exercises } = useExercises()
-  return useCallback(
-    (id: string) => exercises.find((e) => e.id === id)?.name ?? '',
-    [exercises],
-  )
+  return useMemo(() => {
+    const map = new Map(exercises.map((e) => [e.id, e.name]))
+    return (id: string) => map.get(id) ?? ''
+  }, [exercises])
 }

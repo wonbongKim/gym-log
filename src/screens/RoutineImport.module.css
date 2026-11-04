@@ -6,37 +6,59 @@
   border: 1px solid var(--c-border);
   border-radius: var(--r-md);
   color: var(--c-text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: var(--f-sm);
   line-height: 1.5;
   resize: vertical;
+}
+.textarea::placeholder {
+  color: var(--c-text-faint);
 }
 .textarea:focus {
   outline: none;
   border-color: var(--c-primary);
 }
+.textareaError,
+.textareaError:focus {
+  border-color: var(--c-danger);
+}
 
-.sampleBtn {
-  align-self: flex-start;
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.toolBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: var(--sp-1);
-  padding: var(--sp-1) var(--sp-2);
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
   color: var(--c-text-dim);
   font-size: var(--f-sm);
 }
-.sampleBtn:active {
+.toolBtn:active {
+  background: var(--c-surface-2);
   color: var(--c-text);
 }
 
 .error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
   padding: var(--sp-3);
-  background: rgba(255, 84, 112, 0.12);
+  background: var(--c-danger-soft);
   border: 1px solid var(--c-danger);
   border-radius: var(--r-md);
   color: var(--c-danger);
   font-size: var(--f-sm);
+}
+.error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .preview {
@@ -49,7 +71,7 @@
 .previewDays {
   display: inline-block;
   padding: 2px var(--sp-2);
-  background: var(--c-surface-2);
+  background: var(--c-accent-soft);
   border-radius: var(--r-pill);
   font-size: var(--f-xs);
   color: var(--c-accent);
@@ -59,6 +81,8 @@
 .previewName {
   margin: var(--sp-2) 0 var(--sp-3);
   font-size: var(--f-lg);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .previewList {
@@ -72,6 +96,7 @@
 .previewList li {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: var(--sp-3);
   padding-bottom: var(--sp-2);
   border-bottom: 1px solid var(--c-border);
@@ -88,7 +113,277 @@
 }
 
 .previewHint {
+  margin: 0;
+  color: var(--c-success);
+  font-size: var(--f-sm);
+  font-weight: 600;
+}
+
+.help {
+  margin: 0;
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  line-height: 1.7;
+}
+.help code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--c-surface-2);
+  color: var(--c-text-dim);
+  font-size: 11px;
+}
+
+/* 미리보기 — 상태 배지 / 변경 요약 ------------------------------------ */
+.previewTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.badgeNew,
+.badgeEdit,
+.badgeSame {
+  flex-shrink: 0;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-pill);
+  font-size: var(--f-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.badgeNew {
+  background: var(--c-success-soft);
+  color: var(--c-success);
+}
+.badgeEdit {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+.badgeSame {
+  background: var(--c-surface-2);
+  color: var(--c-text-faint);
+}
+
+.previewSame {
+  opacity: 0.6;
+}
+.previewSame .previewName {
+  margin-bottom: 0;
+}
+
+.previewSub {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-2);
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.changes {
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--c-primary-soft);
+  color: var(--c-text);
+  font-size: var(--f-xs);
+  font-weight: 600;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.exMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.exName {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.exNew {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-success-soft);
+  color: var(--c-success);
+  font-size: var(--f-2xs);
+  font-weight: 700;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.exExtra {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.exExtra svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.dropped {
+  margin: var(--sp-3) 0 0;
+  color: var(--c-danger);
+  font-size: var(--f-xs);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.previewHintDim {
+  margin: 0;
+  color: var(--c-text-faint);
+  font-size: var(--f-sm);
+  font-weight: 600;
+}
+
+/* 적용 방식 ------------------------------------------------------------ */
+.modeField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+/* 공용 Segmented는 36px — 여기선 엄지 터치 타깃 44px로 */
+.modeSeg button {
+  min-height: 44px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+.modeDesc,
+.modeDescDanger {
+  margin: 0;
+  font-size: var(--f-xs);
+  line-height: 1.6;
+  color: var(--c-text-dim);
+  word-break: keep-all;
+}
+.modeDescDanger {
+  color: var(--c-danger);
+}
+
+/* 삭제될 루틴 ---------------------------------------------------------- */
+.removed {
+  padding: var(--sp-4);
+  background: var(--c-danger-soft);
+  border: 1px solid var(--c-danger);
+  border-radius: var(--r-lg);
+}
+.removedTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-3);
+  color: var(--c-danger);
+  font-weight: 700;
+}
+.removedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.removedList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  font-size: var(--f-sm);
+}
+.removedName {
+  min-width: 0;
+  text-decoration: line-through;
+  text-decoration-color: var(--c-danger);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.removedHint {
   margin: var(--sp-3) 0 0;
   color: var(--c-text-dim);
   font-size: var(--f-xs);
+}
+
+/* 확인 다이얼로그 안 삭제 목록 */
+.confirmList {
+  margin: 0 0 var(--sp-2);
+  padding-left: var(--sp-4);
+  color: var(--c-text);
+  word-break: keep-all;
+}
+.confirmDays {
+  color: var(--c-text-dim);
+}
+
+/* AI 요청 카드 ---------------------------------------------------------- */
+.aiCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background:
+    linear-gradient(135deg, var(--c-primary-soft), transparent 65%),
+    var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.aiTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--f-md);
+  word-break: keep-all;
+}
+.aiTitle svg {
+  flex-shrink: 0;
+  color: var(--c-primary);
+}
+.aiSteps {
+  margin: 0;
+  padding-left: 1.3em;
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.aiRequest {
+  width: 100%;
+  min-height: 64px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  color: var(--c-text);
+  font-size: var(--f-md);
+  line-height: 1.5;
+  resize: vertical;
+}
+.aiRequest::placeholder {
+  color: var(--c-text-faint);
+  font-size: var(--f-sm);
+}
+.aiRequest:focus {
+  outline: none;
+  border-color: var(--c-primary);
+}
+.aiActions {
+  display: flex;
+  gap: var(--sp-2);
+}
+.aiCopy {
+  flex: 1;
+  min-width: 0;
+}
+
+/* JSON 보기 */
+.viewer {
+  flex: 1;
+  min-height: 60vh;
 }

@@ -1,79 +1,245 @@
-.topInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.2;
+/* 진행률 바 */
+.progress {
+  height: 3px;
+  background: var(--c-surface-2);
+  flex-shrink: 0;
 }
-.topName {
-  font-size: var(--f-md);
-  font-weight: 700;
-  max-width: 60vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.topMeta {
-  font-size: var(--f-xs);
-  color: var(--c-text-dim);
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-primary), var(--c-success));
+  transform-origin: left center;
+  transition: transform var(--dur-med) var(--ease-out);
 }
 
+/* 휴식 타이머가 떠 있을 때 마지막 카드가 가리지 않도록 */
+.bodyWithRest {
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.chipBtn,
+.chipInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-pill);
+  font-size: var(--f-xs);
+  font-weight: 600;
+}
+.chipBtn {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+}
+.chipBtn:active {
+  background: var(--c-surface-2);
+}
+.chipInfo {
+  color: var(--c-text-faint);
+}
+
+/* 종목 카드 */
 .card,
-.cardDone {
-  padding: var(--sp-4);
+.cardCollapsed {
+  scroll-margin-top: var(--sp-3);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
 }
-.cardDone {
-  opacity: 0.6;
+.card {
+  padding: var(--sp-4);
+  transition: border-color var(--dur-med);
+}
+.cardCurrent {
   border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-primary-soft);
+}
+.cardDone {
+  border-color: var(--c-success);
 }
 
 .cardHead {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
+  align-items: flex-start;
+  gap: var(--sp-3);
 }
-.cardTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
-  color: var(--c-text);
-}
-.cardTitle h3 {
-  font-size: var(--f-md);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.doneBtn,
-.doneOn {
+.order {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-top: 1px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: var(--sp-1) var(--sp-2);
-  border-radius: var(--r-pill);
-  font-size: var(--f-xs);
-  font-weight: 700;
-  white-space: nowrap;
-}
-.doneBtn {
+  justify-content: center;
+  border-radius: 50%;
   background: var(--c-surface-2);
   color: var(--c-text-dim);
+  font-size: var(--f-xs);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
-.doneOn {
+.cardCurrent .order {
   background: var(--c-primary);
   color: var(--c-on-primary);
 }
+.titleWrap {
+  flex: 1;
+  min-width: 0;
+}
+.exName {
+  font-size: var(--f-md);
+  line-height: 1.35;
+  word-break: keep-all;
+}
+.exMeta {
+  margin: 2px 0 0;
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+}
+.headBtn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin: -4px -6px 0 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  color: var(--c-text-dim);
+}
+.headBtn:active {
+  background: var(--c-surface-2);
+}
 
+.prev,
+.prevFirst {
+  margin: var(--sp-3) 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  font-size: var(--f-xs);
+  line-height: 1.5;
+}
 .prev {
-  margin: var(--sp-2) 0 var(--sp-3);
-  font-size: var(--f-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--c-accent-soft);
   color: var(--c-accent);
+}
+.prevLine {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+}
+.prevIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.prevNote {
+  margin: 0;
+  padding-left: 19px;
+  color: var(--c-text-dim);
+  word-break: keep-all;
+}
+.goal {
+  margin: 2px 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--c-text);
+  font-weight: 600;
+  word-break: keep-all;
+}
+.goal svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--c-primary);
+}
+.prevFirst {
+  background: var(--c-surface-2);
+  color: var(--c-text-dim);
+}
+
+/* 무게 규칙 안내 */
+.rule {
+  margin: calc(var(--sp-2) * -1) 0 0;
+  color: var(--c-text-faint);
+  font-size: var(--f-2xs);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.rule b {
+  color: var(--c-text-dim);
+}
+
+/* 대체 표시 · 루틴 팁 · 종목 메모 */
+.subChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tip {
+  margin: var(--sp-2) 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+  word-break: keep-all;
+}
+.tip svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--c-accent);
+}
+.exNote {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--c-border-strong);
+  color: var(--c-text);
+  font-size: var(--f-xs);
+  text-align: left;
+  word-break: keep-all;
+}
+.exNote svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--c-accent);
+}
+
+/* 세트 표 */
+.setHead,
+.setRow,
+.setRowDone {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) 52px;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.setHead {
+  padding: 0 0 var(--sp-1);
+  font-size: var(--f-2xs);
+  font-weight: 600;
+  color: var(--c-text-faint);
+  text-align: center;
 }
 
 .sets {
@@ -81,80 +247,266 @@
   flex-direction: column;
   gap: var(--sp-2);
 }
+.setRow,
+.setRowDone {
+  border-radius: var(--r-md);
+  transition: background var(--dur-med);
+}
+.setRowDone {
+  background: var(--c-success-soft);
+}
 
-.setHeadRow,
-.setRow {
-  display: grid;
-  grid-template-columns: 36px 1fr 1fr 40px;
-  gap: var(--sp-2);
+.setBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 세트 번호 = 메모 버튼 */
+.setNo,
+.setNoHasNote {
+  position: relative;
+  height: 48px;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  font-weight: 700;
+  color: var(--c-text-dim);
+  font-variant-numeric: tabular-nums;
 }
-/* grid 자식이 내용 크기 때문에 안 줄어드는 것 방지 */
-.setHeadRow > *,
-.setRow > * {
-  min-width: 0;
+.setNo:active,
+.setNoHasNote:active {
+  background: var(--c-surface-2);
+}
+.setNoHasNote::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
+.setRowDone .setNo,
+.setRowDone .setNoHasNote {
+  color: var(--c-success);
 }
 
-.setHeadRow {
+.setNote {
+  margin-left: 44px;
+  padding: 2px var(--sp-2);
+  border-left: 2px solid var(--c-accent);
+  color: var(--c-accent);
   font-size: var(--f-xs);
-  color: var(--c-text-dim);
+  text-align: left;
+  word-break: keep-all;
 }
-.colNo {
-  text-align: center;
+
+/* 0kg = 빈봉 표시 */
+.kgCell {
+  position: relative;
+  min-width: 0;
+  display: block;
 }
-.colNum {
-  text-align: center;
+.numInputTagged {
+  padding-bottom: 12px !important;
 }
-.colDel {
-  width: 44px;
+.kgTag {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-accent);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .numInput {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  height: 48px;
   padding: 0 var(--sp-2);
   text-align: center;
   background: var(--c-surface-2);
   border: 1px solid var(--c-border);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   color: var(--c-text);
-  font-size: var(--f-md);
+  font-size: var(--f-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.numInput::placeholder {
+  color: var(--c-text-faint);
+  font-size: var(--f-sm);
+  font-weight: 500;
 }
 .numInput:focus {
   outline: none;
   border-color: var(--c-primary);
+  background: var(--c-bg);
+}
+.setRowDone .numInput {
+  background: transparent;
+  border-color: transparent;
 }
 
-.delBtn {
+.check,
+.checkOn {
+  width: 52px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 44px;
-  color: var(--c-text-dim);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-fast);
 }
-.delBtn:disabled {
-  opacity: 0.3;
-  pointer-events: none;
+.check {
+  background: var(--c-surface-2);
+  color: var(--c-text-faint);
+  border: 1px solid var(--c-border);
+}
+.check:active,
+.checkOn:active {
+  transform: scale(0.94);
+}
+.checkOn {
+  background: var(--c-success);
+  color: #06210f;
+  animation: pop var(--dur-med) var(--ease-out);
 }
 
-.addSet {
+.setActions {
   margin-top: var(--sp-3);
-  width: 100%;
-  min-height: 44px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+.setAction {
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border: 1px dashed var(--c-border);
+  border: 1px dashed var(--c-border-strong);
   border-radius: var(--r-md);
   color: var(--c-text-dim);
   font-size: var(--f-sm);
 }
-.addSet:active {
+.setAction:active {
   background: var(--c-surface-2);
+}
+.setAction:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* 접힌(완료) 카드 */
+.cardCollapsed {
+  border-color: transparent;
+  background: var(--c-success-soft);
+}
+.collapsedBtn {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  text-align: left;
+}
+.doneBadge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--c-success);
+  color: #06210f;
+}
+.collapsedBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.collapsedName {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collapsedMeta {
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 과부하 판정 배지 */
+.ol_up,
+.ol_same,
+.ol_down,
+.ol_first {
+  flex-shrink: 0;
+  max-width: 45%;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--f-2xs);
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ol_up {
+  background: var(--c-success);
+  color: #06210f;
+}
+.ol_same {
+  background: var(--c-surface-3);
+  color: var(--c-text-dim);
+}
+.ol_down {
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+}
+.ol_first {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+/* 종목 선택 시트 그룹 */
+.suggestGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.groupTitle {
+  margin: var(--sp-2) var(--sp-1) 0;
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  font-weight: 700;
+}
+.collapsedChevron {
+  flex-shrink: 0;
+  color: var(--c-text-dim);
+}
+
+.finishWrap {
+  margin-top: var(--sp-3);
+  display: flex;
+  flex-direction: column;
 }
 
 .cancelLink {
@@ -162,10 +514,81 @@
   width: 100%;
   padding: var(--sp-3);
   margin-top: var(--sp-1);
-  color: var(--c-text-dim);
+  color: var(--c-text-faint);
   font-size: var(--f-sm);
   text-align: center;
 }
 .cancelLink:active {
   color: var(--c-danger);
+}
+
+/* 휴식 시간 선택 */
+.restGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+  padding: 0 var(--sp-1) var(--sp-2);
+}
+.restOpt,
+.restOptOn {
+  min-height: 44px;
+  border-radius: var(--r-md);
+  font-size: var(--f-sm);
+  font-weight: 700;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+  color: var(--c-text-dim);
+}
+.restOptOn {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+/* 종목 추가 시트 */
+.searchRow {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3);
+  min-height: 48px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+.searchRow:focus-within {
+  border-color: var(--c-primary);
+}
+.searchIcon {
+  color: var(--c-text-faint);
+  flex-shrink: 0;
+}
+.searchInput {
+  flex: 1;
+  height: 46px;
+  background: transparent;
+  border: none;
+  color: var(--c-text);
+  font-size: var(--f-md);
+}
+.searchInput:focus {
+  outline: none;
+}
+.sheetEmpty {
+  margin: var(--sp-3) 0;
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+  text-align: center;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.85);
+  }
+  60% {
+    transform: scale(1.06);
+  }
 }

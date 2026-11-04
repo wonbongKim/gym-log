@@ -10,6 +10,7 @@ textarea,
 select {
   max-width: 100%;
   min-width: 0;
+  font: inherit;
 }
 
 html,
@@ -32,8 +33,8 @@ body {
   font-size: var(--f-md);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  /* iOS 노치/홈바 안전영역 */
-  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
 
 button {
@@ -42,20 +43,46 @@ button {
   border: none;
   background: none;
   color: inherit;
+  padding: 0;
+  touch-action: manipulation;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   margin: 0;
   font-weight: 700;
 }
 
+/* 키보드 포커스만 링 표시 */
+:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 숫자는 자릿수 정렬 */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
 /* 앱 셸: 모바일 폭 중앙 정렬 */
 .app-shell {
-  max-width: 480px;
+  max-width: var(--shell-max);
   margin: 0 auto;
   min-height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
 }

@@ -8,12 +8,16 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  transition: background 0.12s, opacity 0.12s;
+  transition:
+    background var(--dur-fast),
+    opacity var(--dur-fast),
+    transform var(--dur-fast);
   user-select: none;
+  white-space: nowrap;
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 
 .btn:disabled {
@@ -23,6 +27,20 @@
 
 .block {
   width: 100%;
+}
+
+.lg {
+  min-height: 56px;
+  font-size: var(--f-md);
+  font-weight: 700;
+  border-radius: var(--r-lg);
+}
+
+.sm {
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  font-size: var(--f-sm);
+  border-radius: var(--r-sm);
 }
 
 .primary {
@@ -37,8 +55,33 @@
   background: var(--c-surface-2);
   color: var(--c-text);
 }
+.ghost:active {
+  background: var(--c-surface-3);
+}
+
+.outline {
+  background: transparent;
+  color: var(--c-text);
+  border: 1px solid var(--c-border-strong);
+}
+.outline:active {
+  background: var(--c-surface-2);
+}
 
 .danger {
   background: transparent;
   color: var(--c-danger);
+}
+.danger:active {
+  background: var(--c-danger-soft);
+}
+
+.dangerSolid {
+  background: var(--c-danger);
+  color: #fff;
+}
+
+.success {
+  background: var(--c-success);
+  color: #06210f;
 }

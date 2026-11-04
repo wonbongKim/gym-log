@@ -1,8 +1,9 @@
-import { X, Copy, Check } from 'lucide-react'
+import { Copy, Check } from 'lucide-react'
+import { OverlayPage, PageBody, TopBar, TopBarAction } from '../components/Page'
 import { useClipboard } from '../hooks/useClipboard'
-import styles from './RoutineEditor.module.css'
 import own from './RoutineImport.module.css'
 
+/** JSON 읽기 전용 뷰 + 복사 (상태 기반 오버레이) */
 export function RoutineJsonView({
   json,
   title,
@@ -14,38 +15,35 @@ export function RoutineJsonView({
 }) {
   const { copied, copy } = useClipboard()
 
-  const handleCopy = () => copy(json)
-
   return (
-    <div className={styles.overlay}>
-      <header className={styles.topbar}>
-        <button className={styles.iconBtn} onClick={onClose} aria-label="닫기">
-          <X size={22} />
-        </button>
-        <h2 className={styles.topTitle}>{title}</h2>
-        <button className={styles.saveText} onClick={handleCopy}>
-          {copied ? (
-            <>
-              <Check size={16} /> 복사됨
-            </>
-          ) : (
-            <>
-              <Copy size={16} /> 복사
-            </>
-          )}
-        </button>
-      </header>
-
-      <div className={styles.body}>
+    <OverlayPage>
+      <TopBar
+        onBack={onClose}
+        backIcon="close"
+        title={title}
+        right={
+          <TopBarAction onClick={() => copy(json)}>
+            {copied ? (
+              <>
+                <Check size={16} /> 복사됨
+              </>
+            ) : (
+              <>
+                <Copy size={16} /> 복사
+              </>
+            )}
+          </TopBarAction>
+        }
+      />
+      <PageBody>
         <textarea
-          className={own.textarea}
+          className={`${own.textarea} ${own.viewer}`}
           value={json}
           readOnly
           spellCheck={false}
           onFocus={(e) => e.currentTarget.select()}
-          style={{ minHeight: '60vh' }}
         />
-      </div>
-    </div>
+      </PageBody>
+    </OverlayPage>
   )
 }

@@ -1,90 +1,264 @@
-.list {
+.segment {
+  margin-bottom: var(--sp-4);
+}
+
+/* 달력 */
+.calendar {
+  padding: var(--sp-3) var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+.calHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-2);
+}
+.calTitle {
+  font-weight: 800;
+}
+.calNav {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  color: var(--c-text-dim);
+}
+.calNav:active {
+  background: var(--c-surface-2);
+}
+.calNav:disabled {
+  opacity: 0.25;
+  pointer-events: none;
+}
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  justify-items: center;
+}
+.calWeek {
+  padding-bottom: 4px;
+  font-size: var(--f-2xs);
+  font-weight: 600;
+  color: var(--c-text-faint);
+}
+.calDay {
+  width: 100%;
+  max-width: 40px;
+  aspect-ratio: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: var(--f-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text-dim);
+}
+.calDay:disabled {
+  cursor: default;
+}
+.calFuture {
+  color: var(--c-text-faint);
+  opacity: 0.6;
+}
+.calToday {
+  box-shadow: inset 0 0 0 2px var(--c-primary);
+  color: var(--c-text);
+  font-weight: 700;
+}
+.calDayOn {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-weight: 700;
+}
+.calDayOn:active {
+  background: var(--c-primary-press);
+}
+.calSummary {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+}
+.calSummary strong {
+  margin-right: 2px;
+  color: var(--c-text);
+  font-weight: 800;
+}
+
+.monthEmpty {
+  margin: var(--sp-5) 0;
+  color: var(--c-text-faint);
+  font-size: var(--f-sm);
+  text-align: center;
+}
+
+/* 기록 카드 */
+.list,
+.exList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
 }
 
-.card {
+.card,
+.exItem {
+  width: 100%;
   display: flex;
-  align-items: stretch;
-  gap: var(--sp-2);
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-3);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
+  text-align: left;
+  transition: background var(--dur-fast);
+}
+.card:active,
+.exItem:active {
+  background: var(--c-surface-2);
 }
 
-.cardMain {
+.dateBox {
+  flex-shrink: 0;
+  width: 46px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md);
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  line-height: 1.1;
+}
+.dateNum {
+  font-size: var(--f-lg);
+  font-weight: 800;
+}
+.dateDow {
+  font-size: var(--f-2xs);
+  font-weight: 700;
+}
+
+.cardBody {
   flex: 1;
   min-width: 0;
-  text-align: left;
-  padding: var(--sp-4);
-}
-.cardMain:active {
-  opacity: 0.7;
-}
-
-.cardTop {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 2px;
 }
-
-.date {
-  display: inline-block;
-  padding: 2px var(--sp-2);
-  background: var(--c-surface-2);
-  border-radius: var(--r-pill);
+.name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--c-text-dim);
   font-size: var(--f-xs);
+}
+.pr {
+  align-self: flex-start;
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent-soft);
   color: var(--c-accent);
+  font-size: var(--f-2xs);
   font-weight: 700;
 }
 .chevron {
-  color: var(--c-text-dim);
+  flex-shrink: 0;
+  color: var(--c-text-faint);
 }
 
-.name {
-  margin-top: var(--sp-2);
-  font-size: var(--f-md);
-  word-break: keep-all;
-}
-
-.meta {
-  margin: var(--sp-1) 0 0;
-  color: var(--c-text-dim);
-  font-size: var(--f-sm);
-}
-
-.del {
-  display: flex;
+/* 종목별 */
+.exIcon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  color: var(--c-text-dim);
-  border-left: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
 }
-.del:active {
-  background: var(--c-surface-2);
-  color: var(--c-danger);
+.exBest {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+.exBestValue {
+  font-weight: 800;
+}
+.exBestLabel {
+  color: var(--c-text-faint);
+  font-size: var(--f-2xs);
 }
 
-.backup {
-  margin-top: var(--sp-6);
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--c-border);
+/* 저장 공간 */
+.usage {
+  margin: var(--sp-2) var(--sp-1) 0;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--c-surface-2);
 }
-.backupLabel {
+.usageHead {
+  display: flex;
+  justify-content: space-between;
   font-size: var(--f-sm);
-  color: var(--c-text-dim);
   font-weight: 600;
 }
-.backupBtns {
-  margin-top: var(--sp-2);
-  display: flex;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-2);
+.usageNum {
+  color: var(--c-text-dim);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.usageTrack {
+  margin: var(--sp-2) 0;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-surface-3);
+  overflow: hidden;
+}
+.usageFill,
+.usageFillWarn {
+  display: block;
+  height: 100%;
+  transform-origin: left center;
+}
+.usageFill {
+  background: var(--c-primary);
+}
+.usageFillWarn {
+  background: var(--c-danger);
+}
+.usageHint {
+  margin: 0;
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  line-height: 1.6;
+  word-break: keep-all;
 }

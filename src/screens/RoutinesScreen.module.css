@@ -10,12 +10,14 @@
 .card {
   display: flex;
   align-items: stretch;
-  gap: var(--sp-2);
-  padding: var(--sp-4);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.cardToday {
+  border-color: rgba(79, 124, 255, 0.5);
 }
 
 .cardMain {
@@ -23,32 +25,25 @@
   min-width: 0;
   text-align: left;
   display: block;
+  padding: var(--sp-4);
+  transition: background var(--dur-fast);
 }
 .cardMain:active {
-  opacity: 0.7;
-}
-
-.startHint {
-  margin-top: var(--sp-2);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--f-xs);
-  color: var(--c-primary);
-  font-weight: 600;
+  background: var(--c-surface-2);
 }
 
 .cardTop {
-  margin-bottom: var(--sp-1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
 }
-
-.days {
-  display: inline-block;
+.todayChip {
   padding: 2px var(--sp-2);
-  background: var(--c-surface-2);
   border-radius: var(--r-pill);
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
   font-size: var(--f-xs);
-  color: var(--c-accent);
   font-weight: 700;
 }
 
@@ -61,31 +56,55 @@
 .meta {
   margin: var(--sp-2) 0 0;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-3);
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+}
+.meta span {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--c-text-dim);
-  font-size: var(--f-sm);
 }
 
-.cardActions {
+.side {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: var(--sp-1);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) var(--sp-3) var(--sp-3) 0;
+  gap: var(--sp-2);
 }
 
-.iconBtn {
+.moreBtn {
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
   border-radius: var(--r-sm);
   color: var(--c-text-dim);
 }
-.iconBtn:active {
+.moreBtn:active {
   background: var(--c-surface-2);
-  color: var(--c-text);
+}
+
+.playBtn {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  box-shadow: 0 4px 14px rgba(79, 124, 255, 0.35);
+  transition: transform var(--dur-fast);
+}
+.playBtn:active {
+  transform: scale(0.94);
+  background: var(--c-primary-press);
 }
 
 .addWrap {
@@ -93,4 +112,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+}
+
+.textLink {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 var(--sp-3);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
 }

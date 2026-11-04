@@ -1,65 +1,204 @@
-.summary {
+.celebrate {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
   padding: var(--sp-4);
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
+  background: linear-gradient(135deg, rgba(47, 210, 122, 0.18), rgba(79, 124, 255, 0.18));
+  border: 1px solid rgba(47, 210, 122, 0.35);
+  animation: celebrateIn 420ms var(--ease-out);
 }
-.routineName {
+.celebrateIcon {
+  flex-shrink: 0;
+  color: var(--c-success);
+}
+.celebrateTitle {
+  margin: 0;
   font-size: var(--f-lg);
+  font-weight: 800;
+}
+.celebrateDesc {
+  margin: 2px 0 0;
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
   word-break: keep-all;
 }
-.stats {
-  margin-top: var(--sp-2);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
+
+.summary {
+  padding: var(--sp-1) var(--sp-1) 0;
+}
+.routineName {
+  font-size: var(--f-xl);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+}
+.when {
+  margin: var(--sp-1) 0 0;
   color: var(--c-text-dim);
   font-size: var(--f-sm);
 }
 
 .exCard {
-  padding: var(--sp-4);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
+  overflow: hidden;
 }
 .exHead {
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--sp-2);
-  margin-bottom: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
 }
-.exHead h4 {
+.exHead:active {
+  background: var(--c-surface-2);
+}
+.exTitle {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px var(--sp-2);
+}
+.exTitle h4 {
   font-size: var(--f-md);
-  font-weight: 700;
+  word-break: keep-all;
 }
-.doneIcon {
-  color: var(--c-primary);
+.prBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-size: var(--f-2xs);
+  font-weight: 800;
+}
+.exLink {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
 }
 
 .setTable {
   width: 100%;
   border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.setTable th {
+  padding: var(--sp-1) var(--sp-4);
+  font-size: var(--f-2xs);
+  font-weight: 600;
+  color: var(--c-text-faint);
+  text-align: right;
+  border-top: 1px solid var(--c-border);
+}
+.setTable th:first-child {
+  text-align: left;
 }
 .setTable td {
-  padding: var(--sp-2) 0;
+  padding: var(--sp-2) var(--sp-4);
   border-top: 1px solid var(--c-border);
   font-size: var(--f-sm);
+  text-align: right;
 }
-.setTable tr:first-child td {
-  border-top: none;
+.topRow td {
+  background: var(--c-primary-soft);
 }
 .setNo {
+  text-align: left !important;
   color: var(--c-text-dim);
-  width: 30%;
+  white-space: nowrap;
+}
+.doneIcon {
+  margin-right: 4px;
+  vertical-align: -2px;
+  color: var(--c-success);
 }
 .setKg {
-  width: 40%;
-  text-align: center;
-  font-weight: 600;
+  font-weight: 700;
 }
 .setReps {
-  width: 30%;
-  text-align: right;
+  color: var(--c-text);
+}
+.setEst {
   color: var(--c-text-dim);
+}
+
+@keyframes celebrateIn {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+
+/* 과부하 판정 */
+.ol_up,
+.ol_same,
+.ol_down,
+.ol_first {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--f-2xs);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.ol_up {
+  background: var(--c-success);
+  color: #06210f;
+}
+.ol_same {
+  background: var(--c-surface-3);
+  color: var(--c-text-dim);
+}
+.ol_down {
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+}
+.ol_first {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+.subLine,
+.exNote {
+  margin: 0 var(--sp-4) var(--sp-2);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--f-xs);
+  word-break: keep-all;
+}
+.subLine {
+  color: var(--c-primary);
+}
+.exNote {
+  color: var(--c-text);
+}
+.exNote svg,
+.subLine svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.exNote svg {
+  color: var(--c-accent);
+}
+
+.noteRow td {
+  padding-top: 0 !important;
+  border-top: none !important;
+  text-align: left !important;
+  color: var(--c-accent);
+  font-size: var(--f-xs) !important;
 }

@@ -1,0 +1,27 @@
+.wrap {
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+
+.on,
+.off {
+  flex: 1;
+  min-height: 36px;
+  border-radius: calc(var(--r-md) - 3px);
+  font-size: var(--f-sm);
+  font-weight: 600;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.off {
+  color: var(--c-text-dim);
+}
+.on {
+  background: var(--c-surface-3);
+  color: var(--c-text);
+}
