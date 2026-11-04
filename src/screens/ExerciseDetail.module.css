@@ -134,3 +134,44 @@
 .olFirst {
   color: var(--c-text-faint);
 }
+
+/* 루틴별 보기 */
+.routineChips {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(var(--sp-4) * -1);
+  padding: 0 var(--sp-4);
+}
+.routineChips::-webkit-scrollbar {
+  display: none;
+}
+.routineChip,
+.routineChipOn {
+  flex-shrink: 0;
+  max-width: 220px;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--c-border-strong);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.routineChipOn {
+  background: var(--c-primary-soft);
+  border-color: var(--c-primary);
+  color: var(--c-primary);
+}
+.rowRoutine {
+  max-width: 100%;
+  color: var(--c-text-faint);
+  font-size: var(--f-2xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

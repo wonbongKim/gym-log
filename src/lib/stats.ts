@@ -71,6 +71,8 @@ export function logMinutes(log: Pick<WorkoutLog, 'startedAt' | 'finishedAt'>): n
 export interface ExerciseSession {
   logId: string
   date: string
+  routineId: string
+  routineName: string
   sets: SetRecord[]
   best: ExerciseBest
 }
@@ -86,7 +88,14 @@ export function exerciseHistory(
       if (ex.exerciseId !== exerciseId) continue
       const sets = validSets(ex.sets)
       if (sets.length === 0) continue
-      out.push({ logId: log.id, date: log.date, sets, best: exerciseBest(sets) })
+      out.push({
+        logId: log.id,
+        date: log.date,
+        routineId: log.routineId,
+        routineName: log.routineName,
+        sets,
+        best: exerciseBest(sets),
+      })
     }
   }
   return out.sort(

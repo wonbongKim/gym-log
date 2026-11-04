@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
-import { KEYS, storage, uid } from '../storage'
+import { KEYS, storage, StorageQuotaError, uid } from '../storage'
 import type {
   Exercise,
   ExercisesStore,
@@ -10,6 +10,7 @@ import type {
   WorkoutSession,
 } from '../types'
 import { compareLogsDesc } from '../lib/stats'
+import { previousSetsFor } from '../lib/overload'
 
 /** 종목 마스터 훅 */
 export function useExercises() {
@@ -118,11 +119,19 @@ export function useLogs() {
     })
   }, [])
 
-  /** 특정 종목의 가장 최근 기록(직전 기록)을 반환 */
+  /**
+   * 특정 종목의 비교 기준(직전) 기록.
+   * routineId를 주면 같은 루틴의 최근 수행을 우선하고, 이 종목을 따로 하는
+   * 다른 현재 루틴(예: 월/금 강도 차이)의 기록은 건너뛴다.
+   */
   const lastRecordOf = useCallback(
     (
       exerciseId: string,
+      routineId?: string,
     ): { date: string; sets: LoggedExercise['sets']; note?: string } | null => {
+      if (routineId) {
+        return previousSetsFor(logs, exerciseId, routineId, storage.getRoutines().routines)
+      }
       for (const log of logs) {
         const ex = log.exercises.find((e) => e.exerciseId === exerciseId)
         if (ex && ex.sets.length > 0) return { date: log.date, sets: ex.sets, note: ex.note }
@@ -143,7 +152,12 @@ export function useSession() {
   )
 
   const setSession = useCallback((session: WorkoutSession | null) => {
-    storage.setSession({ version: 1, session })
+    try {
+      storage.setSession({ version: 1, session })
+    } catch (e) {
+      // 용량 초과는 DialogProvider가 정리 안내를 띄운다. 입력 중 화면이 깨지지 않게 여기서 멈춘다.
+      if (!(e instanceof StorageQuotaError)) throw e
+    }
   }, [])
 
   return { session: store.session, setSession }

@@ -5,7 +5,7 @@ import { LineChart, type ChartPoint } from '../components/LineChart'
 import { OverlayPage, PageBody, TopBar } from '../components/Page'
 import { Segmented } from '../components/Segmented'
 import { useGoBack } from '../hooks/useGoBack'
-import { useExerciseNameOf, useLogs } from '../hooks/useStores'
+import { useExerciseNameOf, useLogs, useRoutines } from '../hooks/useStores'
 import {
   exerciseHistory,
   relativeDay,
@@ -13,7 +13,7 @@ import {
   shortDateLabel,
   summarizeSetsShort,
 } from '../lib/stats'
-import { compareSessions, type OverloadResult } from '../lib/overload'
+import { overloadSeries, type OverloadResult } from '../lib/overload'
 import styles from './Screen.module.css'
 import own from './ExerciseDetail.module.css'
 
@@ -40,50 +40,72 @@ export function ExerciseDetailRoute() {
     nameOf(exerciseId) ||
     logs.flatMap((l) => l.exercises).find((e) => e.exerciseId === exerciseId)?.exerciseName ||
     '종목'
-  return <ExerciseDetail name={latestName} history={history} />
+  return <ExerciseDetail exerciseId={exerciseId} name={latestName} history={history} />
 }
 
 function ExerciseDetail({
+  exerciseId,
   name,
   history,
 }: {
+  exerciseId: string
   name: string
   history: ReturnType<typeof exerciseHistory>
 }) {
   const navigate = useNavigate()
   const goBack = useGoBack('/history/exercises')
-  const weighted = history.some((h) => h.best.maxKg != null && h.best.maxKg > 0)
-  const metrics: Metric[] = weighted ? ['e1rm', 'maxKg', 'volume'] : ['maxReps']
-  const [metric, setMetric] = useState<Metric>(metrics[0])
+  const { routines } = useRoutines()
+  const [metric, setMetric] = useState<Metric | null>(null)
+  const [routineFilter, setRoutineFilter] = useState<string>('all')
 
-  const points: ChartPoint[] = history
+  // 회차별 판정: 같은 루틴의 직전 수행 우선 (월/금 강도 차이가 섞이지 않게)
+  const withOverload = useMemo(() => {
+    const ol = overloadSeries(history, routines, exerciseId)
+    return history.map((h, i) => ({ ...h, ol: ol[i] }))
+  }, [history, routines, exerciseId])
+
+  // 이 종목을 한 루틴이 2개 이상이면 루틴별로 나눠 볼 수 있게 (최근 수행 순, 최대 4개)
+  const routineOptions = useMemo(() => {
+    const seen = new Map<string, string>()
+    for (let i = history.length - 1; i >= 0; i--) {
+      const h = history[i]
+      if (!seen.has(h.routineId)) seen.set(h.routineId, h.routineName)
+    }
+    return [...seen.entries()].slice(0, 4).map(([id, label]) => ({ id, label }))
+  }, [history])
+
+  const view =
+    routineFilter === 'all'
+      ? withOverload
+      : withOverload.filter((h) => h.routineId === routineFilter)
+
+  const weighted = view.some((h) => h.best.maxKg != null && h.best.maxKg > 0)
+  const metrics: Metric[] = weighted ? ['e1rm', 'maxKg', 'volume'] : ['maxReps']
+  const activeMetric = metric && metrics.includes(metric) ? metric : metrics[0]
+
+  const points: ChartPoint[] = view
     .map((h) => {
       const v =
-        metric === 'e1rm'
+        activeMetric === 'e1rm'
           ? h.best.bestE1rm
-          : metric === 'maxKg'
+          : activeMetric === 'maxKg'
             ? h.best.maxKg
-            : metric === 'volume'
+            : activeMetric === 'volume'
               ? h.best.volume
               : h.best.maxReps
       return v == null ? null : { date: h.date, value: v }
     })
     .filter((p): p is ChartPoint => p != null)
 
-  const maxKg = Math.max(...history.map((h) => h.best.maxKg ?? -Infinity))
-  const bestE1rm = Math.max(...history.map((h) => h.best.bestE1rm ?? -Infinity))
-  const maxReps = Math.max(...history.map((h) => h.best.maxReps))
+  const maxKg = Math.max(...view.map((h) => h.best.maxKg ?? -Infinity))
+  const bestE1rm = Math.max(...view.map((h) => h.best.bestE1rm ?? -Infinity))
+  const maxReps = Math.max(...view.map((h) => h.best.maxReps))
 
   // 처음 대비 변화 (첫 기록 → 최근)
   const delta = points.length >= 2 ? points[points.length - 1].value - points[0].value : null
-  const meta = METRIC_META[metric]
-  // 회차별 직전 대비 과부하 판정 (오래된 순으로 계산 후 최신순 표시)
-  const withOverload = history.map((h, i) => ({
-    ...h,
-    ol: compareSessions(h.sets, i > 0 ? history[i - 1].sets : null),
-  }))
-  const recentFirst = [...withOverload].reverse()
-  const compared = withOverload.filter((h) => h.ol.status !== 'first')
+  const meta = METRIC_META[activeMetric]
+  const recentFirst = [...view].reverse()
+  const compared = view.filter((h) => h.ol.status !== 'first')
   const upRate = compared.length
     ? Math.round((compared.filter((h) => h.ol.status === 'up').length / compared.length) * 100)
     : null
@@ -92,6 +114,22 @@ function ExerciseDetail({
     <OverlayPage>
       <TopBar onBack={goBack} title={name} subtitle={`${history.length}회 기록`} />
       <PageBody>
+        {routineOptions.length > 1 && (
+          <div className={own.routineChips} role="tablist" aria-label="루틴별 보기">
+            {[{ id: 'all', label: '전체' }, ...routineOptions].map((o) => (
+              <button
+                key={o.id}
+                role="tab"
+                aria-selected={routineFilter === o.id}
+                className={routineFilter === o.id ? own.routineChipOn : own.routineChip}
+                onClick={() => setRoutineFilter(o.id)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className={styles.stats}>
           {weighted ? (
             <>
@@ -132,7 +170,7 @@ function ExerciseDetail({
           {metrics.length > 1 && (
             <Segmented<Metric>
               label="그래프 지표"
-              value={metric}
+              value={activeMetric}
               onChange={setMetric}
               options={metrics.map((m) => ({ value: m, label: METRIC_META[m].label }))}
             />
@@ -169,6 +207,9 @@ function ExerciseDetail({
                   <span className={own.rowMain}>
                     <span className={own.rowSets}>{summarizeSetsShort(h.sets)}</span>
                     <OlTag ol={h.ol} />
+                    {routineOptions.length > 1 && routineFilter === 'all' && (
+                      <span className={own.rowRoutine}>{h.routineName}</span>
+                    )}
                     {setNotesSummary(h.sets) && (
                       <span className={own.rowNote}>{setNotesSummary(h.sets)}</span>
                     )}
@@ -182,7 +223,7 @@ function ExerciseDetail({
             ))}
           </ul>
           <p className={styles.hint}>
-            ↑ 지난번보다 무게·횟수·볼륨 중 하나라도 늘었을 때 · 성공률 = ↑ 회차 / 비교 가능한 회차
+            ↑/↓ 는 같은 루틴의 직전 수행과 세트 단위로 비교해요 · 성공률 = ↑ 회차 / 비교 가능한 회차
             {weighted && ' · 오른쪽 숫자는 그날의 추정 1RM(kg)'}
           </p>
         </section>

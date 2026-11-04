@@ -95,16 +95,17 @@ export function WorkoutScreen() {
 
   // 종목별 직전 기록 (세션 구성이 바뀔 때만 재계산)
   const exIdsKey = session?.exercises.map((e) => e.exerciseId).join('|') ?? ''
+  const routineId = session?.routineId ?? ''
   const prevById = useMemo(() => {
     const map = new Map<string, PrevRecord | null>()
     exIdsKey
       .split('|')
       .filter(Boolean)
       .forEach((id) => {
-        if (!map.has(id)) map.set(id, lastRecordOf(id))
+        if (!map.has(id)) map.set(id, lastRecordOf(id, routineId))
       })
     return map
-  }, [exIdsKey, lastRecordOf])
+  }, [exIdsKey, routineId, lastRecordOf])
 
   const routine = routines.find((r) => r.id === session?.routineId)
   const routineExOf = (exerciseId: string) =>
@@ -259,7 +260,7 @@ export function WorkoutScreen() {
     const doneCount = orig.sets.filter((s) => s.done).length
     const remaining = doneCount > 0 ? Math.max(1, orig.sets.length - doneCount) : orig.sets.length
     const replacement: LoggedExercise = {
-      ...seedExercise(target.id, target.name, remaining, lastRecordOf(target.id), orig.targetReps),
+      ...seedExercise(target.id, target.name, remaining, lastRecordOf(target.id, session.routineId), orig.targetReps),
       substitutedFrom: orig.substitutedFrom ?? {
         exerciseId: orig.exerciseId,
         exerciseName: orig.exerciseName,
@@ -297,7 +298,7 @@ export function WorkoutScreen() {
     const ex = ensureExercise(trimmed)
     const newIdx = session.exercises.length
     patch((s) => {
-      s.exercises.push(seedExercise(ex.id, ex.name, 3, lastRecordOf(ex.id)))
+      s.exercises.push(seedExercise(ex.id, ex.name, 3, lastRecordOf(ex.id, session.routineId)))
     })
     setAddSheet(false)
     scrollToCard(newIdx, 120)

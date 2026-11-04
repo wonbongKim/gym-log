@@ -18,7 +18,7 @@ import { Sheet, SheetItem } from '../components/Sheet'
 import { useDialog } from '../components/DialogProvider'
 import { useClipboard } from '../hooks/useClipboard'
 import { useGoBack } from '../hooks/useGoBack'
-import { useLogs } from '../hooks/useStores'
+import { useLogs, useRoutines } from '../hooks/useStores'
 import {
   e1rm,
   exerciseBest,
@@ -65,7 +65,11 @@ function LogDetail({ log, allLogs }: { log: WorkoutLog; allLogs: WorkoutLog[] })
   const { totalSets, totalVolume } = logStats(log.exercises)
   const minutes = logMinutes(log)
   const prs = useMemo(() => prsInLog(log, allLogs), [log, allLogs])
-  const overload = useMemo(() => overloadForLog(log, allLogs), [log, allLogs])
+  const { routines } = useRoutines()
+  const overload = useMemo(
+    () => overloadForLog(log, allLogs, routines),
+    [log, allLogs, routines],
+  )
   const olCounts = { up: 0, same: 0, down: 0, first: 0 }
   overload.forEach((r) => (olCounts[r.status] += 1))
   const compared = olCounts.up + olCounts.same + olCounts.down

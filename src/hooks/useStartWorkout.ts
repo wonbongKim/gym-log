@@ -30,7 +30,7 @@ export function useStartWorkout() {
         }
         if (r !== 'replace') return false
       }
-      setSession(seedSession(routine, nameOf, lastRecordOf))
+      setSession(seedSession(routine, nameOf, (id) => lastRecordOf(id, routine.id)))
       navigate('/workout')
       return true
     },

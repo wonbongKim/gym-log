@@ -2,7 +2,7 @@
 // 외부로 아무것도 전송하지 않는다(복사·공유·파일 저장만).
 import type { Routine, SetRecord, WorkoutLog } from '../types'
 import { exerciseHistory, localDate, logMinutes, validSets } from './stats'
-import { compareSessions, overloadForLog } from './overload'
+import { overloadForLog, overloadSeries } from './overload'
 
 export type Period = '1m' | '3m' | '6m' | 'all'
 
@@ -82,10 +82,11 @@ export function buildAiExport(o: ExportOptions) {
         logs.flatMap((l) => l.exercises).find((e) => e.exerciseId === id)?.exerciseName ||
         id
       const counts = { up: 0, same: 0, down: 0 }
-      h.forEach((s, i) => {
-        if (i === 0) return
-        const r = compareSessions(s.sets, h[i - 1].sets)
-        if (r.status !== 'first') counts[r.status] += 1
+      // 전체 기록 기준으로 판정(기간 첫 회차도 이전 기록과 비교)한 뒤 기간 안 회차만 집계
+      const inPeriod = new Set(h.map((x) => x.logId))
+      const all = exerciseHistory(o.allLogs, id)
+      overloadSeries(all, o.routines, id).forEach((r, i) => {
+        if (inPeriod.has(all[i].logId) && r.status !== 'first') counts[r.status] += 1
       })
       const firstE = h[0].best.bestE1rm
       const lastE = h[h.length - 1].best.bestE1rm
@@ -103,7 +104,7 @@ export function buildAiExport(o: ExportOptions) {
     .filter(Boolean)
 
   const workouts = logs.map((l) => {
-    const ol = overloadForLog(l, o.allLogs)
+    const ol = overloadForLog(l, o.allLogs, o.routines)
     return {
       date: l.date,
       routine: l.routineName,
