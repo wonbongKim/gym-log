@@ -7,7 +7,7 @@ import { SwitchRow } from '../components/Switch'
 import { useDialog } from '../components/DialogProvider'
 import { useClipboard } from '../hooks/useClipboard'
 import { useGoBack } from '../hooks/useGoBack'
-import { useExerciseNameOf, useLogs, useRoutines } from '../hooks/useStores'
+import { useExerciseNameOf, useExercises, useLogs, useRoutines } from '../hooks/useStores'
 import {
   analysisPrompt,
   approxKB,
@@ -31,6 +31,7 @@ export function ExportScreen() {
   const { logs } = useLogs()
   const { routines } = useRoutines()
   const nameOf = useExerciseNameOf()
+  const { index } = useExercises()
   const { toast } = useDialog()
   const { copy } = useClipboard()
 
@@ -54,6 +55,7 @@ export function ExportScreen() {
       allLogs: logs,
       routines,
       nameOf,
+      exerciseOf: (id: string) => index.byId.get(id),
       from,
       to,
       includeRoutines: withRoutines,
@@ -62,7 +64,7 @@ export function ExportScreen() {
     if (format === 'raw') return compactJson(buildRawExport(opts))
     const json = compactJson(buildAiExport(opts))
     return withPrompt ? `${analysisPrompt(fromLabel, to)}\n\`\`\`json\n${json}\n\`\`\`\n` : json
-  }, [inRange, logs, routines, nameOf, from, to, withRoutines, withNotes, withPrompt, format, fromLabel])
+  }, [inRange, logs, routines, nameOf, index, from, to, withRoutines, withNotes, withPrompt, format, fromLabel])
 
   const isMarkdown = format === 'ai' && withPrompt
   const filename = `gymlog-${format === 'ai' ? 'ai' : 'data'}-${period}-${to}.${isMarkdown ? 'md' : 'json'}`

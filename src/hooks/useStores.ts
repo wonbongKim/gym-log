@@ -11,37 +11,39 @@ import type {
 } from '../types'
 import { compareLogsDesc } from '../lib/stats'
 import { previousSetsFor } from '../lib/overload'
+import { exerciseIndex, findExercise } from '../lib/exercises'
 
-/** 종목 마스터 훅 */
+/**
+ * 이름(또는 별칭)으로 종목을 찾고, 기본 종목에도 내 종목에도 없으면 내 종목으로 새로 만든다.
+ * 항상 최신 스토리지를 기준으로 동작하므로 한 틱에 여러 번 호출돼도 안전.
+ */
+export function ensureExercise(name: string): Exercise {
+  const trimmed = name.trim()
+  const current = storage.getExercises()
+  const found = findExercise(trimmed, exerciseIndex(current.exercises))
+  if (found) return found
+  const created: Exercise = { id: uid('ex'), name: trimmed }
+  storage.setExercises({
+    ...current,
+    exercises: [...current.exercises, created],
+  })
+  return created
+}
+
+/** id가 알려진 종목이면 그것을, 아니면 이름으로 찾거나 만든다 (AI가 준 exerciseId 대응) */
+export function ensureExerciseRef(ref: { exerciseId?: string; name: string }): Exercise {
+  const byId = ref.exerciseId ? exerciseIndex().byId.get(ref.exerciseId) : undefined
+  return byId ?? ensureExercise(ref.name)
+}
+
+/** 종목 훅 — 기본 종목 + 내 종목을 합친 목록과 이름 색인 */
 export function useExercises() {
   const store = useSyncExternalStore<ExercisesStore>(
     (cb) => storage.subscribe(KEYS.exercises, cb),
     storage.getExercises,
   )
-
-  /**
-   * 이름으로 종목을 찾고, 없으면 생성해 반환.
-   * 항상 최신 스토리지를 기준으로 동작하므로 한 틱에 여러 번 호출돼도 안전.
-   */
-  const ensureExercise = useCallback(
-    (name: string, bodyweight = false): Exercise => {
-      const trimmed = name.trim()
-      const current = storage.getExercises()
-      const found = current.exercises.find(
-        (e) => e.name.toLowerCase() === trimmed.toLowerCase(),
-      )
-      if (found) return found
-      const created: Exercise = { id: uid('ex'), name: trimmed, bodyweight }
-      storage.setExercises({
-        ...current,
-        exercises: [...current.exercises, created],
-      })
-      return created
-    },
-    [],
-  )
-
-  return { exercises: store.exercises, ensureExercise }
+  const index = exerciseIndex(store.exercises)
+  return { exercises: index.list, index, ensureExercise }
 }
 
 /** 루틴 훅 */
@@ -181,11 +183,8 @@ export function useSettings() {
   return { settings: store.settings, updateSettings }
 }
 
-/** 종목 id → 이름 매핑 (마스터 기준) */
+/** 종목 id → 이름 매핑 (기본 종목 + 내 종목) */
 export function useExerciseNameOf() {
-  const { exercises } = useExercises()
-  return useMemo(() => {
-    const map = new Map(exercises.map((e) => [e.id, e.name]))
-    return (id: string) => map.get(id) ?? ''
-  }, [exercises])
+  const { index } = useExercises()
+  return useMemo(() => (id: string) => index.byId.get(id)?.name ?? '', [index])
 }

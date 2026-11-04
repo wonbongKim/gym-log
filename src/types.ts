@@ -4,14 +4,66 @@
 
 export type WeekDay = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
 
-/** 운동 종목 마스터 (gymlog_exercises) */
+/** 주 사용 부위 (종목 선택 화면의 분류) */
+export type Muscle = 'chest' | 'back' | 'shoulders' | 'legs' | 'arms' | 'core'
+
+/** 기구 종류 — 바벨/스미스는 "빈봉 제외" 규칙, 어시스트는 음수 = 보조 무게 */
+export type Equipment =
+  | 'barbell'
+  | 'dumbbell'
+  | 'machine'
+  | 'cable'
+  | 'smith'
+  | 'bodyweight'
+  | 'assisted'
+
+/** 동작 패턴 — 같은 패턴끼리 대체 종목으로 추천한다 */
+export type MovementPattern =
+  | 'chest_press'
+  | 'incline_press'
+  | 'chest_fly'
+  | 'dip'
+  | 'vertical_push'
+  | 'lateral_raise'
+  | 'front_raise'
+  | 'rear_delt'
+  | 'vertical_pull'
+  | 'horizontal_pull'
+  | 'shrug'
+  | 'squat'
+  | 'lunge'
+  | 'hinge'
+  | 'hip_thrust'
+  | 'knee_extension'
+  | 'knee_flexion'
+  | 'hip_abduction'
+  | 'hip_adduction'
+  | 'calf'
+  | 'curl'
+  | 'triceps'
+  | 'core_flexion'
+  | 'core_stability'
+
+/**
+ * 운동 종목.
+ * - 기본 종목: src/data/exercises.json (앱에 내장, id 고정 예: "bench_press")
+ * - 내 종목: 사용자가 직접 추가한 것만 gymlog_exercises에 저장 (id "ex_…")
+ */
 export interface Exercise {
   id: string
   name: string
-  /** true면 맨몸 운동(보조무게 음수/0 허용) */
-  bodyweight: boolean
+  /** 같은 종목으로 인식할 다른 이름 (공백·대소문자는 원래 무시) */
+  aliases?: string[]
+  muscle?: Muscle
+  pattern?: MovementPattern
+  equipment?: Equipment
+  /** 앱 내장 기본 종목 여부 */
+  builtin?: boolean
+  /** (옛 데이터 호환용, 사용 안 함) */
+  bodyweight?: boolean
 }
 
+/** 직접 추가한 종목 (gymlog_exercises) — 기본 종목은 저장하지 않는다 */
 export interface ExercisesStore {
   version: 1
   exercises: Exercise[]

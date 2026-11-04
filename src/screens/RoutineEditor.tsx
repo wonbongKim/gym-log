@@ -14,7 +14,8 @@ import { Stepper } from '../components/Stepper'
 import { OverlayPage, PageBody, TopBar, TopBarAction } from '../components/Page'
 import { useDialog } from '../components/DialogProvider'
 import { WEEK_DAYS } from '../lib/days'
-import { nameKey, normalizeAlternatives } from '../lib/routineImport'
+import { normalizeAlternatives } from '../lib/routineImport'
+import { exerciseKey, exerciseMeta, findExercise } from '../lib/exercises'
 import { uid } from '../storage'
 import type { Routine, WeekDay } from '../types'
 import { useExercises, useRoutines } from '../hooks/useStores'
@@ -82,7 +83,7 @@ function snapshot(name: string, days: WeekDay[], rows: DraftRow[]): string {
 }
 
 export function RoutineEditor({ routine }: { routine: Routine | null }) {
-  const { exercises, ensureExercise } = useExercises()
+  const { exercises, index, ensureExercise } = useExercises()
   const { upsert } = useRoutines()
   const { confirm, toast } = useDialog()
   const goBack = useGoBack('/routines')
@@ -108,10 +109,23 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
     if (!row) return []
     const cut = Math.max(row.alternatives.lastIndexOf(','), row.alternatives.lastIndexOf('，'))
     const prefix = cut >= 0 ? `${row.alternatives.slice(0, cut + 1).trimEnd()} ` : ''
-    const used = new Set(normalizeAlternatives(prefix).map(nameKey))
-    used.add(nameKey(row.name))
-    return exercises.filter((e) => !used.has(nameKey(e.name))).map((e) => prefix + e.name)
+    const used = new Set(normalizeAlternatives(prefix).map(exerciseKey))
+    used.add(exerciseKey(row.name))
+    return exercises.filter((e) => !used.has(exerciseKey(e.name))).map((e) => prefix + e.name)
   }, [rows, altFocus, exercises])
+
+  /** 입력한 이름이 어떤 종목으로 저장되는지 (별칭 연결 / 처음 보는 종목 / 부위·기구) */
+  const nameHint = (raw: string): { text: string; isNew: boolean } | null => {
+    const n = raw.trim()
+    if (!n) return null
+    const hit = findExercise(n, index)
+    if (!hit) return { text: '처음 보는 종목 · 저장하면 내 종목으로 추가돼요', isNew: true }
+    const meta = exerciseMeta(hit)
+    if (exerciseKey(hit.name) !== exerciseKey(n)) {
+      return { text: `→ '${hit.name}'(으)로 저장돼요${meta ? ` · ${meta}` : ''}`, isNew: false }
+    }
+    return meta ? { text: meta, isNew: false } : null
+  }
 
   const toggleDay = (d: WeekDay) =>
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]))
@@ -247,6 +261,7 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
             const altCount = normalizeAlternatives(r.alternatives, r.name).length
             const hasNote = r.note.trim().length > 0
             const extraId = `row-extra-${r.key}`
+            const hint = nameHint(r.name)
             return (
               <div key={r.key} className={styles.row}>
                 <div className={styles.rowHead}>
@@ -269,6 +284,11 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
                     <X size={18} />
                   </button>
                 </div>
+                {hint && (
+                  <p className={hint.isNew ? `${styles.nameHint} ${styles.nameHintNew}` : styles.nameHint}>
+                    {hint.text}
+                  </p>
+                )}
                 <div className={styles.rowNums}>
                   <div className={styles.numField}>
                     <span>세트</span>
@@ -348,7 +368,7 @@ export function RoutineEditor({ routine }: { routine: Routine | null }) {
                         value={r.alternatives}
                         onFocus={() => setAltFocus(r.key)}
                         onChange={(e) => updateRow(r.key, { alternatives: e.target.value })}
-                        placeholder="예: 덤벨 벤치프레스, 체스트 프레스 머신"
+                        placeholder="예: 덤벨 벤치프레스, 머신 체스트프레스"
                         enterKeyHint="next"
                       />
                     </label>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   FileJson,
   ClipboardPaste,
@@ -21,10 +21,11 @@ import { routinesToCompactJson } from '../lib/routineExport'
 import { buildRoutineAiPrompt } from '../lib/routineAiPrompt'
 import { formatDays } from '../lib/days'
 import { useApplyRoutineImport, type RoutineImportResult } from '../hooks/useAddParsedRoutines'
-import { useExerciseNameOf, useRoutines } from '../hooks/useStores'
+import { useExerciseNameOf, useExercises, useRoutines } from '../hooks/useStores'
+import { exerciseKey, exerciseNamesForPrompt, resolveExerciseId } from '../lib/exercises'
 import { useClipboard } from '../hooks/useClipboard'
 import { useGoBack } from '../hooks/useGoBack'
-import type { ParsedRoutine } from '../lib/routineImport'
+import type { ParsedExercise, ParsedRoutine } from '../lib/routineImport'
 import editor from './RoutineEditor.module.css'
 import own from './RoutineImport.module.css'
 
@@ -62,6 +63,7 @@ function resultMessage(r: RoutineImportResult): string {
 function AiPromptCard() {
   const { routines } = useRoutines()
   const nameOf = useExerciseNameOf()
+  const { exercises } = useExercises()
   const { copied, copy } = useClipboard(2000)
   const { toast } = useDialog()
   const [request, setRequest] = useState('')
@@ -70,6 +72,7 @@ function AiPromptCard() {
     buildRoutineAiPrompt(
       routines.length > 0 ? routinesToCompactJson(routines, nameOf) : null,
       request,
+      exerciseNamesForPrompt(exercises),
     )
 
   const handleCopy = async () => {
@@ -120,11 +123,17 @@ function AiPromptCard() {
 }
 
 function PreviewCard({ item, showBadge }: { item: ImportPlanItem; showBadge: boolean }) {
-  const { parsed: p, target, changes, newExerciseKeys, droppedExercises } = item
+  const { parsed: p, target, changes, newExerciseIdx, droppedExercises } = item
+  const { index } = useExercises()
   const unchanged = !!target && changes.length === 0
   const badge = !target ? '새 루틴' : unchanged ? '변경 없음' : '수정'
   const badgeCls = !target ? own.badgeNew : unchanged ? own.badgeSame : own.badgeEdit
-  const isNewEx = (name: string) => newExerciseKeys.includes(name.trim().toLowerCase())
+  /** 이미 있는 종목이면 그 종목, 처음 보는 이름이면 undefined */
+  const known = (e: ParsedExercise) => {
+    const id = resolveExerciseId(e, index)
+    return id ? index.byId.get(id) : undefined
+  }
+  const unknownCount = p.exercises.filter((e) => !known(e)).length
 
   return (
     <div className={unchanged ? `${own.preview} ${own.previewSame}` : own.preview}>
@@ -142,13 +151,20 @@ function PreviewCard({ item, showBadge }: { item: ImportPlanItem; showBadge: boo
 
       {!unchanged && (
         <ul className={own.previewList}>
-          {p.exercises.map((e, i) => (
+          {p.exercises.map((e, i) => {
+            const ex = known(e)
+            const renamed = ex && exerciseKey(ex.name) !== exerciseKey(e.name)
+            return (
             <li key={i}>
               <div className={own.exMain}>
                 <span className={own.exName}>
                   {e.name}
-                  {target && isNewEx(e.name) && <span className={own.exNew}>새 종목</span>}
+                  {target && newExerciseIdx.includes(i) && (
+                    <span className={own.exNew}>루틴에 추가</span>
+                  )}
+                  {!ex && <span className={own.exUnknown}>처음 보는 종목</span>}
                 </span>
+                {renamed && <span className={own.exResolved}>→ {ex.name}(으)로 연결</span>}
                 {e.alternatives && e.alternatives.length > 0 && (
                   <span className={own.exExtra}>
                     <Repeat2 size={12} aria-label="대체 종목" />
@@ -166,11 +182,18 @@ function PreviewCard({ item, showBadge }: { item: ImportPlanItem; showBadge: boo
                 {e.targetSets}세트 · {e.targetReps || '-'}
               </span>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
       {!unchanged && droppedExercises.length > 0 && (
         <p className={own.dropped}>빠지는 종목: {droppedExercises.join(', ')}</p>
+      )}
+      {!unchanged && unknownCount > 0 && (
+        <p className={own.unknownHint}>
+          처음 보는 종목 {unknownCount}개는 내 종목으로 새로 등록돼요. 이미 하던 운동이라면 이름을
+          목록에 있는 이름으로 바꿔야 지난 기록과 이어져요.
+        </p>
       )}
     </div>
   )
@@ -180,6 +203,7 @@ export function RoutineImport() {
   const applyImport = useApplyRoutineImport()
   const { routines } = useRoutines()
   const nameOf = useExerciseNameOf()
+  const { index } = useExercises()
   const goBack = useGoBack('/routines')
   const { toast, confirm } = useDialog()
   const [text, setText] = useState('')
@@ -201,18 +225,19 @@ export function RoutineImport() {
 
   const hasExisting = routines.length > 0
   // 기존 루틴과 겹치는 게 있으면 기본은 "같으면 수정", 아니면 "새로 추가"
+  const resolveId = useCallback((e: ParsedExercise) => resolveExerciseId(e, index), [index])
   const anyMatch = useMemo(
     () =>
       !!preview &&
       hasExisting &&
-      planImport(preview, routines, 'merge', nameOf).items.some((it) => it.target),
-    [preview, routines, nameOf, hasExisting],
+      planImport(preview, routines, 'merge', nameOf, resolveId).items.some((it) => it.target),
+    [preview, routines, nameOf, resolveId, hasExisting],
   )
   const mode: ImportMode = !hasExisting ? 'add' : (modeChoice ?? (anyMatch ? 'merge' : 'add'))
 
   const plan = useMemo(
-    () => (preview ? planImport(preview, routines, mode, nameOf) : null),
-    [preview, routines, mode, nameOf],
+    () => (preview ? planImport(preview, routines, mode, nameOf, resolveId) : null),
+    [preview, routines, mode, nameOf, resolveId],
   )
   const noop = !plan || (mode !== 'add' && isNoopPlan(plan))
 

@@ -1,22 +1,22 @@
 import { useCallback } from 'react'
 import { storage, uid } from '../storage'
-import { useExercises } from './useStores'
+import { ensureExerciseRef } from './useStores'
 import type { ParsedRoutine } from '../lib/routineImport'
 import { applyImportPlan, planImport, type ImportMode } from '../lib/routineMerge'
-import type { Exercise, Routine } from '../types'
+import { exerciseIndex, resolveExerciseId } from '../lib/exercises'
+import type { Routine } from '../types'
 
-/** 이름 기반 루틴 → 종목 마스터(exerciseId)에 연결된 Routine */
-function buildRoutine(
-  p: ParsedRoutine,
-  id: string,
-  ensureExercise: (name: string) => Exercise,
-): Routine {
+/**
+ * 이름 기반 루틴 → 종목(exerciseId)에 연결된 Routine.
+ * 기본 종목·내 종목·별칭으로 먼저 찾고, 처음 보는 이름만 내 종목으로 새로 만든다.
+ */
+function buildRoutine(p: ParsedRoutine, id: string): Routine {
   return {
     id,
     name: p.name,
     days: p.days,
     exercises: p.exercises.map((e, idx) => ({
-      exerciseId: ensureExercise(e.name).id,
+      exerciseId: ensureExerciseRef(e).id,
       targetSets: e.targetSets,
       targetReps: e.targetReps,
       order: idx,
@@ -28,20 +28,15 @@ function buildRoutine(
   }
 }
 
-/** 이름 기반 루틴(JSON 가져오기/예시)을 종목 마스터에 연결해 새 루틴으로 저장 */
+/** 이름 기반 루틴(JSON 가져오기/예시)을 종목에 연결해 새 루틴으로 저장 */
 export function useAddParsedRoutines() {
-  const { ensureExercise } = useExercises()
-
-  return useCallback(
-    (parsed: ParsedRoutine[]): Routine[] => {
-      // 종목을 먼저 만들어 두고(ensureExercise가 exercises 스토어를 갱신) 루틴은 한 번에 저장
-      const built = parsed.map((p) => buildRoutine(p, uid('rt'), ensureExercise))
-      const current = storage.getRoutines()
-      storage.setRoutines({ ...current, routines: [...current.routines, ...built] })
-      return built
-    },
-    [ensureExercise],
-  )
+  return useCallback((parsed: ParsedRoutine[]): Routine[] => {
+    // 종목을 먼저 만들어 두고(ensureExerciseRef가 exercises 스토어를 갱신) 루틴은 한 번에 저장
+    const built = parsed.map((p) => buildRoutine(p, uid('rt')))
+    const current = storage.getRoutines()
+    storage.setRoutines({ ...current, routines: [...current.routines, ...built] })
+    return built
+  }, [])
 }
 
 export interface RoutineImportResult {
@@ -58,31 +53,23 @@ export interface RoutineImportResult {
  * 미리보기와 같은 planImport를 최신 스토리지 기준으로 다시 계산해 적용한다.
  */
 export function useApplyRoutineImport() {
-  const { ensureExercise } = useExercises()
+  return useCallback((parsed: ParsedRoutine[], mode: ImportMode): RoutineImportResult => {
+    const previous = storage.getRoutines()
+    const index = exerciseIndex()
+    const nameOf = (id: string) => index.byId.get(id)?.name ?? ''
 
-  return useCallback(
-    (parsed: ParsedRoutine[], mode: ImportMode): RoutineImportResult => {
-      const previous = storage.getRoutines()
-      const names = new Map(storage.getExercises().exercises.map((e) => [e.id, e.name]))
-      const nameOf = (id: string) => names.get(id) ?? ''
+    const plan = planImport(parsed, previous.routines, mode, nameOf, (e) =>
+      resolveExerciseId(e, index),
+    )
+    const routines = applyImportPlan(plan, previous.routines, buildRoutine, () => uid('rt'))
+    storage.setRoutines({ ...previous, routines })
 
-      const plan = planImport(parsed, previous.routines, mode, nameOf)
-      const routines = applyImportPlan(
-        plan,
-        previous.routines,
-        (p, id) => buildRoutine(p, id, ensureExercise),
-        () => uid('rt'),
-      )
-      storage.setRoutines({ ...previous, routines })
-
-      return {
-        mode,
-        added: plan.added,
-        updated: plan.updated,
-        removed: plan.removed.length,
-        undo: () => storage.setRoutines(previous),
-      }
-    },
-    [ensureExercise],
-  )
+    return {
+      mode,
+      added: plan.added,
+      updated: plan.updated,
+      removed: plan.removed.length,
+      undo: () => storage.setRoutines(previous),
+    }
+  }, [])
 }

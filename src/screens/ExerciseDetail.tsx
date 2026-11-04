@@ -5,7 +5,8 @@ import { LineChart, type ChartPoint } from '../components/LineChart'
 import { OverlayPage, PageBody, TopBar } from '../components/Page'
 import { Segmented } from '../components/Segmented'
 import { useGoBack } from '../hooks/useGoBack'
-import { useExerciseNameOf, useLogs, useRoutines } from '../hooks/useStores'
+import { useExercises, useLogs, useRoutines } from '../hooks/useStores'
+import { exerciseMeta } from '../lib/exercises'
 import {
   exerciseHistory,
   relativeDay,
@@ -29,27 +30,38 @@ const METRIC_META: Record<Metric, { label: string; unit: string; title: string }
 export function ExerciseDetailRoute() {
   const { exerciseId } = useParams()
   const { logs } = useLogs()
-  const nameOf = useExerciseNameOf()
+  const { index } = useExercises()
   const history = useMemo(
     () => (exerciseId ? exerciseHistory(logs, exerciseId) : []),
     [logs, exerciseId],
   )
   if (!exerciseId || history.length === 0) return <Navigate to="/history/exercises" replace />
-  // 마스터 이름 우선, 없으면 가장 최근 기록의 snapshot 이름
+  // 종목 이름 우선, 없으면 가장 최근 기록의 snapshot 이름
+  const info = index.byId.get(exerciseId)
   const latestName =
-    nameOf(exerciseId) ||
+    info?.name ||
     logs.flatMap((l) => l.exercises).find((e) => e.exerciseId === exerciseId)?.exerciseName ||
     '종목'
-  return <ExerciseDetail exerciseId={exerciseId} name={latestName} history={history} />
+  return (
+    <ExerciseDetail
+      exerciseId={exerciseId}
+      name={latestName}
+      infoLabel={exerciseMeta(info)}
+      history={history}
+    />
+  )
 }
 
 function ExerciseDetail({
   exerciseId,
   name,
+  infoLabel,
   history,
 }: {
   exerciseId: string
   name: string
+  /** "가슴 · 바벨" (정보 없으면 빈 문자열) */
+  infoLabel: string
   history: ReturnType<typeof exerciseHistory>
 }) {
   const navigate = useNavigate()
@@ -112,7 +124,11 @@ function ExerciseDetail({
 
   return (
     <OverlayPage>
-      <TopBar onBack={goBack} title={name} subtitle={`${history.length}회 기록`} />
+      <TopBar
+        onBack={goBack}
+        title={name}
+        subtitle={infoLabel ? `${infoLabel} · ${history.length}회 기록` : `${history.length}회 기록`}
+      />
       <PageBody>
         {routineOptions.length > 1 && (
           <div className={own.routineChips} role="tablist" aria-label="루틴별 보기">

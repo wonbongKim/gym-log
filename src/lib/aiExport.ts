@@ -1,8 +1,9 @@
 // 기간별 내보내기 — AI에 붙여넣어 분석받기 좋은 요약 형식 / 원본 형식.
 // 외부로 아무것도 전송하지 않는다(복사·공유·파일 저장만).
-import type { Routine, SetRecord, WorkoutLog } from '../types'
+import type { Exercise, Routine, SetRecord, WorkoutLog } from '../types'
 import { exerciseHistory, localDate, logMinutes, validSets } from './stats'
 import { overloadForLog, overloadSeries } from './overload'
+import { EQUIPMENT_LABEL, MUSCLE_LABEL, MUSCLE_ORDER } from './exercises'
 
 export type Period = '1m' | '3m' | '6m' | 'all'
 
@@ -42,6 +43,8 @@ interface ExportOptions {
   allLogs: WorkoutLog[]
   routines: Routine[]
   nameOf: (id: string) => string
+  /** 종목 정보 (부위·기구) — 없으면 생략 */
+  exerciseOf?: (id: string) => Exercise | undefined
   from: string | null
   to: string
   includeRoutines: boolean
@@ -90,8 +93,11 @@ export function buildAiExport(o: ExportOptions) {
       })
       const firstE = h[0].best.bestE1rm
       const lastE = h[h.length - 1].best.bestE1rm
+      const info = o.exerciseOf?.(id)
       return {
         exercise: name,
+        ...(info?.muscle ? { muscle: MUSCLE_LABEL[info.muscle] } : {}),
+        ...(info?.equipment ? { equipment: EQUIPMENT_LABEL[info.equipment] } : {}),
         sessions: h.length,
         first: { date: h[0].date, sets: h[0].sets.map(setStr) },
         latest: { date: h[h.length - 1].date, sets: h[h.length - 1].sets.map(setStr) },
@@ -128,6 +134,25 @@ export function buildAiExport(o: ExportOptions) {
     }
   })
 
+  // 부위별 세트 수 (기간 내 완료 세트, 대체 종목 포함) — 부위 정보가 있을 때만
+  const setsByMuscle: Record<string, number> = {}
+  if (o.exerciseOf) {
+    const counts = new Map<string, number>()
+    for (const l of logs) {
+      for (const e of l.exercises) {
+        const n = validSets(e.sets).length
+        if (!n) continue
+        const m = o.exerciseOf(e.exerciseId)?.muscle
+        const label = m ? MUSCLE_LABEL[m] : '기타'
+        counts.set(label, (counts.get(label) ?? 0) + n)
+      }
+    }
+    for (const label of [...MUSCLE_ORDER.map((m) => MUSCLE_LABEL[m]), '기타']) {
+      if (counts.has(label)) setsByMuscle[label] = counts.get(label)!
+    }
+  }
+  const hasMuscle = Object.keys(setsByMuscle).length > 0
+
   return {
     about: {
       app: 'gym-log (개인 운동 기록)',
@@ -136,13 +161,15 @@ export function buildAiExport(o: ExportOptions) {
       workoutCount: logs.length,
       format: {
         sets: '"무게x횟수" 문자열 배열, 세트 순서대로',
-        vsLast: '같은 종목 직전 수행 대비 점진적 과부하 판정 (up/same/down: 이유)',
+        vsLast: '같은 루틴의 같은 종목 직전 수행 대비 점진적 과부하 판정 (up/same/down: 이유)',
         insteadOf: '원래 종목 대신 수행한 경우 원래 종목 이름',
         e1rm: '추정 1RM (Epley 공식, kg)',
+        ...(hasMuscle ? { setsByMuscle: '기간 내 부위별 완료 세트 수 (대체 종목 포함)' } : {}),
       },
       weightRules: WEIGHT_RULES,
     },
     ...(routines ? { routines } : {}),
+    ...(hasMuscle ? { setsByMuscle } : {}),
     exerciseSummary,
     workouts,
   }
@@ -193,7 +220,7 @@ export function analysisPrompt(from: string, to: string): string {
     '1. 종목별로 점진적 과부하가 되고 있는지 (exerciseSummary, workouts[].vsLast 참고)',
     '2. 정체·후퇴한 종목과 원인 추정 — 메모(note, setNotes)의 통증·가동범위 부족 등도 고려',
     '3. 다음 2주간 종목별 무게·횟수 목표 (빈봉 제외 원판 무게 기준으로)',
-    '4. 루틴 구성(부위 균형, 주간 볼륨, 빈도) 개선점',
+    '4. 루틴 구성(부위 균형, 주간 볼륨, 빈도) 개선점 — setsByMuscle(부위별 세트 수)과 기간 참고',
     '',
     `무게 규칙: ${WEIGHT_RULES.join(' / ')}`,
     '',

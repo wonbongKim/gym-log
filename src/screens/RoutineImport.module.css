@@ -387,3 +387,30 @@
   flex: 1;
   min-height: 60vh;
 }
+
+/* 처음 보는 종목 (기본 종목·내 종목에 없는 이름) */
+.exUnknown {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-size: var(--f-2xs);
+  font-weight: 700;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+/* 별칭으로 기존 종목에 연결된 경우 */
+.exResolved {
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+  line-height: 1.5;
+}
+.unknownHint {
+  margin: var(--sp-3) 0 0;
+  color: var(--c-accent);
+  font-size: var(--f-xs);
+  line-height: 1.6;
+  word-break: keep-all;
+}

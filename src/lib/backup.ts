@@ -1,5 +1,6 @@
 import { storage } from '../storage'
 import { localDate } from './stats'
+import { reconcileExercises } from './exerciseMigrate'
 import type { ExercisesStore, LogsStore, RoutinesStore } from '../types'
 
 export class BackupError extends Error {}
@@ -83,4 +84,6 @@ export function restoreBackup(backup: BackupFile): void {
   storage.setExercises(backup.exercises)
   storage.setRoutines(backup.routines)
   storage.setLogs(backup.logs)
+  // 예전 백업의 종목 id를 기본 종목으로 맞춘다
+  reconcileExercises()
 }

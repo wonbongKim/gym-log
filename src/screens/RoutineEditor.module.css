@@ -256,3 +256,15 @@
   outline: none;
   border-color: var(--c-primary);
 }
+
+/* 종목 이름 아래 — 어떤 종목으로 저장되는지 (번호 원 너비만큼 들여서 입력칸과 맞춤) */
+.nameHint {
+  margin: calc(-1 * var(--sp-2)) 0 0 32px;
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.nameHintNew {
+  color: var(--c-accent);
+}

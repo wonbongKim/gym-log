@@ -8,12 +8,20 @@ export const AI_REQUEST_PLACEHOLDER =
  *
  * @param currentJson routinesToCompactJson()/routinesToImportJson()으로 만든 현재 루틴 JSON (없으면 null)
  * @param request 사용자가 앱에서 미리 적은 요청 (비어 있으면 placeholder)
+ * @param exerciseNames exerciseNamesForPrompt()로 만든 종목 이름 목록 (부위별)
  */
-export function buildRoutineAiPrompt(currentJson: string | null, request?: string): string {
+export function buildRoutineAiPrompt(
+  currentJson: string | null,
+  request?: string,
+  exerciseNames?: string,
+): string {
   const req = request?.trim() || AI_REQUEST_PLACEHOLDER
   const current = currentJson
     ? ['```json', currentJson, '```'].join('\n')
     : '아직 등록한 루틴이 없어요. 새로 만들어 주세요.'
+  const names = exerciseNames?.trim()
+    ? `\n■ 종목 이름 목록 (이 앱이 알아보는 이름)\n${exerciseNames.trim()}\n`
+    : ''
 
   return `[gym-log 루틴 요청]
 저는 'gym-log'라는 개인 운동 기록 앱을 쓰고 있어요. 앱에 그대로 붙여넣어 적용할 수 있도록, 아래 형식의 JSON으로 루틴을 만들어 주세요. 맨 아래 '원하는 변경사항'을 반영해 주세요.
@@ -26,11 +34,11 @@ export function buildRoutineAiPrompt(currentJson: string | null, request?: strin
   - "days": 요일 배열. "mon", "tue", "wed", "thu", "fri", "sat", "sun" 중에서 골라요.
   - "exercises": 수행 순서대로 나열한 종목 배열
 - 종목
-  - "name": 종목 이름(한국어). 이미 있는 종목은 철자를 똑같이 써 주세요. 이름이 같아야 지난 기록과 이어져요.
+  - "name": 종목 이름(한국어). 아래 '종목 이름 목록'에 있는 운동이면 그 이름을 철자 그대로 써 주세요. 이름이 같아야 지난 기록과 이어져요. 목록에 없는 운동만 새 이름으로 써 주세요(앱에 새 종목으로 등록돼요).
   - "targetSets": 세트 수 (숫자)
   - "targetReps": 목표 횟수 (문자열, 예: "8~10", "12", "실패 지점까지")
   - "note": (선택) 짧은 수행 팁, 예: "템포 3-1-1", "무릎 아프면 가동범위 줄이기"
-  - "alternatives": (선택) 기구가 사용 중일 때 대신할 종목 이름 배열, 예: ["덤벨 벤치프레스", "체스트 프레스 머신"]
+  - "alternatives": (선택) 기구가 사용 중일 때 대신할 종목 이름 배열, 예: ["덤벨 벤치프레스", "머신 체스트프레스"]
 
 예시:
 [
@@ -38,7 +46,7 @@ export function buildRoutineAiPrompt(currentJson: string | null, request?: strin
     "name": "월요일 - 가슴/삼두",
     "days": ["mon"],
     "exercises": [
-      { "name": "벤치프레스", "targetSets": 3, "targetReps": "8~10", "note": "2초 동안 내리기", "alternatives": ["덤벨 벤치프레스", "체스트 프레스 머신"] },
+      { "name": "벤치프레스", "targetSets": 3, "targetReps": "8~10", "note": "2초 동안 내리기", "alternatives": ["덤벨 벤치프레스", "머신 체스트프레스"] },
       { "name": "케이블 푸시다운", "targetSets": 3, "targetReps": "12~15" }
     ]
   }
@@ -58,7 +66,7 @@ export function buildRoutineAiPrompt(currentJson: string | null, request?: strin
 
 ■ 현재 루틴
 ${current}
-
+${names}
 ■ 원하는 변경사항
 ${req}
 `

@@ -1,8 +1,11 @@
 import type { WeekDay } from '../types'
+import { exerciseKey } from './exercises'
 
 /** JSON 파싱 결과의 종목 (이름 기준, exerciseId는 적용 시점에 연결) */
 export interface ParsedExercise {
   name: string
+  /** (선택) 기본 종목 id 등 — 알려진 id면 이름보다 우선해 연결 */
+  exerciseId?: string
   targetSets: number
   targetReps: string
   /** 수행 팁/주의사항 */
@@ -59,15 +62,15 @@ export function nameKey(name: string): string {
 export function normalizeAlternatives(raw: unknown, exclude?: string): string[] {
   const list: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : []
   const out: string[] = []
-  const seen = new Set<string>(exclude ? [nameKey(exclude)] : [])
+  const seen = new Set<string>(exclude ? [exerciseKey(exclude)] : [])
   for (const item of list) {
     let value: unknown = item
     if (item && typeof item === 'object') value = pick(item as Record<string, unknown>, ['name', '이름'])
     if (typeof value !== 'string' && typeof value !== 'number') continue
     for (const part of String(value).split(/[,，、\n]/)) {
       const name = part.trim()
-      if (!name || seen.has(nameKey(name))) continue
-      seen.add(nameKey(name))
+      if (!name || seen.has(exerciseKey(name))) continue
+      seen.add(exerciseKey(name))
       out.push(name)
     }
   }
@@ -138,6 +141,10 @@ function parseOne(data: unknown, idx: number): ParsedRoutine {
       repsRaw == null ? '' : String(repsRaw).trim()
 
     const ex: ParsedExercise = { name: exName.trim(), targetSets, targetReps }
+    const exId = pick(e, ['exerciseId', 'exercise_id', 'id'])
+    if (typeof exId === 'string' && /^[A-Za-z0-9_-]{2,80}$/.test(exId.trim())) {
+      ex.exerciseId = exId.trim()
+    }
     const note = normalizeNote(pick(e, NOTE_KEYS))
     if (note) ex.note = note
     const alternatives = normalizeAlternatives(pick(e, ALT_KEYS), ex.name)
@@ -216,7 +223,7 @@ export const SAMPLE_JSON = `[
         "targetSets": 3,
         "targetReps": "8~10",
         "note": "2초 동안 내리기, 견갑 고정",
-        "alternatives": ["덤벨 벤치프레스", "체스트 프레스 머신"]
+        "alternatives": ["덤벨 벤치프레스", "머신 체스트프레스"]
       },
       { "name": "어시스트 턱걸이", "targetSets": 3, "targetReps": "10~12" }
     ]

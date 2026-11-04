@@ -1,6 +1,10 @@
 import type { Routine } from '../types'
 import { formatDays } from './days'
-import { nameKey, type ParsedRoutine } from './routineImport'
+import { exerciseKey } from './exercises'
+import { nameKey, type ParsedExercise, type ParsedRoutine } from './routineImport'
+
+/** 붙여넣은 종목 → 이미 있는 종목 id (기본 종목·내 종목·별칭 포함). 처음 보는 이름이면 null */
+export type ResolveExerciseId = (e: ParsedExercise) => string | null
 
 /**
  * JSON 가져오기 적용 방식
@@ -17,8 +21,8 @@ export interface ImportPlanItem {
   matchedBy: 'id' | 'name' | null
   /** 기존 루틴 대비 짧은 변경 요약 (예: "종목 5→6 (+1)") — 비어 있으면 변경 없음 */
   changes: string[]
-  /** 기존 루틴에 없던 종목의 nameKey */
-  newExerciseKeys: string[]
+  /** 기존 루틴에 없던 종목 (parsed.exercises 인덱스) */
+  newExerciseIdx: number[]
   /** 기존 루틴에서 빠지는 종목 이름 */
   droppedExercises: string[]
 }
@@ -82,7 +86,8 @@ export function diffRoutine(
   p: ParsedRoutine,
   r: Routine,
   nameOf: (id: string) => string,
-): Pick<ImportPlanItem, 'changes' | 'newExerciseKeys' | 'droppedExercises'> {
+  resolveId: ResolveExerciseId,
+): Pick<ImportPlanItem, 'changes' | 'newExerciseIdx' | 'droppedExercises'> {
   const changes: string[] = []
 
   if (p.name.trim() !== r.name.trim()) changes.push('이름 변경')
@@ -91,20 +96,21 @@ export function diffRoutine(
   const newDays = formatDays(p.days)
   if (oldDays !== newDays) changes.push(`요일 ${oldDays || '없음'}→${newDays}`)
 
+  // 종목은 id로 비교 — "벤치 프레스"·"바벨 벤치프레스"처럼 이름만 달라도 같은 종목이면 변경 아님
   const oldEx = [...r.exercises].sort((a, b) => a.order - b.order)
-  const oldKeys = oldEx.map((e) => nameKey(nameOf(e.exerciseId)))
-  const newKeys = p.exercises.map((e) => nameKey(e.name))
+  const oldKeys = oldEx.map((e) => e.exerciseId)
+  const newKeys = p.exercises.map((e) => resolveId(e) ?? `new:${exerciseKey(e.name)}`)
 
-  const newExerciseKeys = newKeys.filter((k) => !oldKeys.includes(k))
+  const newExerciseIdx = newKeys.flatMap((k, i) => (oldKeys.includes(k) ? [] : [i]))
   const droppedExercises = oldEx
     .filter((_, i) => !newKeys.includes(oldKeys[i]))
     .map((e) => nameOf(e.exerciseId) || '(이름 없음)')
 
   const countPart =
     oldEx.length !== p.exercises.length ? `종목 ${oldEx.length}→${p.exercises.length}` : '종목'
-  if (newExerciseKeys.length || droppedExercises.length) {
+  if (newExerciseIdx.length || droppedExercises.length) {
     const delta = [
-      newExerciseKeys.length ? `+${newExerciseKeys.length}` : '',
+      newExerciseIdx.length ? `+${newExerciseIdx.length}` : '',
       droppedExercises.length ? `−${droppedExercises.length}` : '',
     ]
       .filter(Boolean)
@@ -118,8 +124,8 @@ export function diffRoutine(
   let setsReps = 0
   let extras = 0
   const used = new Set<number>()
-  for (const e of p.exercises) {
-    const k = nameKey(e.name)
+  for (const [ni, e] of p.exercises.entries()) {
+    const k = newKeys[ni]
     const idx = oldKeys.findIndex((ok, i) => ok === k && !used.has(i))
     if (idx < 0) continue
     used.add(idx)
@@ -135,11 +141,11 @@ export function diffRoutine(
   if (extras) changes.push(`메모·대체 ${extras}곳`)
 
   // 종목 구성은 같은데 순서만 바뀐 경우 (구성이 바뀌면 위 요약으로 충분)
-  if (!newExerciseKeys.length && !droppedExercises.length) {
+  if (!newExerciseIdx.length && !droppedExercises.length) {
     if (!sameList(newKeys, oldKeys)) changes.push('순서 변경')
   }
 
-  return { changes, newExerciseKeys, droppedExercises }
+  return { changes, newExerciseIdx, droppedExercises }
 }
 
 /** 미리보기·적용에 공통으로 쓰는 가져오기 계획 */
@@ -148,6 +154,7 @@ export function planImport(
   existing: Routine[],
   mode: ImportMode,
   nameOf: (id: string) => string,
+  resolveId: ResolveExerciseId,
 ): ImportPlan {
   const matches =
     mode === 'add'
@@ -162,11 +169,11 @@ export function planImport(
         target: null,
         matchedBy: null,
         changes: [],
-        newExerciseKeys: [],
+        newExerciseIdx: [],
         droppedExercises: [],
       }
     }
-    return { parsed: p, target, matchedBy, ...diffRoutine(p, target, nameOf) }
+    return { parsed: p, target, matchedBy, ...diffRoutine(p, target, nameOf, resolveId) }
   })
 
   const matchedIds = new Set(items.flatMap((it) => (it.target ? [it.target.id] : [])))

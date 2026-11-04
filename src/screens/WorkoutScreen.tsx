@@ -13,8 +13,6 @@ import {
   Volume2,
   History,
   Trash2,
-  Search,
-  Dumbbell,
   Repeat,
   ArrowDownToLine,
   NotebookPen,
@@ -30,6 +28,8 @@ import { RestTimer } from '../components/RestTimer'
 import { Sheet, SheetItem } from '../components/Sheet'
 import { SwitchRow } from '../components/Switch'
 import { NoteSheet, SET_NOTE_PRESETS, EXERCISE_NOTE_PRESETS } from '../components/NoteSheet'
+import { ExercisePickerSheet } from '../components/ExercisePickerSheet'
+import { exerciseKey, findExercise, PATTERN_LABEL, usesEmptyBar } from '../lib/exercises'
 import { useDialog } from '../components/DialogProvider'
 import {
   useExercises,
@@ -54,7 +54,7 @@ import { primeAudio } from '../lib/sound'
 import { addLogMakingRoom } from '../lib/storageCare'
 import { downloadBackup } from '../lib/backup'
 import { storage } from '../storage'
-import type { LoggedExercise, SetRecord, WorkoutSession } from '../types'
+import type { Exercise, LoggedExercise, SetRecord, WorkoutSession } from '../types'
 import styles from './WorkoutScreen.module.css'
 
 const REST_OPTIONS = [30, 60, 90, 120, 150, 180, 240]
@@ -79,7 +79,7 @@ export function WorkoutScreen() {
   const { session, setSession } = useSession()
   const { logs, lastRecordOf } = useLogs()
   const { routines } = useRoutines()
-  const { exercises: master, ensureExercise } = useExercises()
+  const { index, ensureExercise } = useExercises()
   const { settings, updateSettings } = useSettings()
   const { confirm, choose, toast } = useDialog()
   const now = useNow(1000)
@@ -106,6 +106,15 @@ export function WorkoutScreen() {
       })
     return map
   }, [exIdsKey, routineId, lastRecordOf])
+
+  // 종목별로 지금까지 한 횟수 — 종목 선택·대체 추천에서 자주 한 종목을 위로
+  const usage = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const l of logs) {
+      for (const e of l.exercises) m.set(e.exerciseId, (m.get(e.exerciseId) ?? 0) + 1)
+    }
+    return m
+  }, [logs])
 
   const routine = routines.find((r) => r.id === session?.routineId)
   const routineExOf = (exerciseId: string) =>
@@ -448,15 +457,32 @@ export function WorkoutScreen() {
         }
       }
     }
-    const exclude = new Set([subEx.exerciseName, subEx.substitutedFrom?.exerciseName])
-    return [
-      { title: '루틴에 정해 둔 대체 종목', names: fromRoutine.filter((n) => !exclude.has(n)) },
-      {
-        title: '전에 대신했던 종목',
-        names: usedBefore.filter((n) => !exclude.has(n) && !fromRoutine.includes(n)),
-      },
-    ].filter((g) => g.names.length > 0)
+    // 이미 보여준 종목은 다음 묶음에서 뺀다 (이름·별칭이 달라도 같은 종목이면 하나로)
+    const shown = new Set<string>([subEx.exerciseId, baseId])
+    const keyOf = (n: string) => findExercise(n, index)?.id ?? `name:${exerciseKey(n)}`
+    const take = (names: string[]) =>
+      names.filter((n) => {
+        const k = keyOf(n)
+        if (shown.has(k)) return false
+        shown.add(k)
+        return true
+      })
+    const groups = [
+      { title: '루틴에 정해 둔 대체 종목', names: take(fromRoutine) },
+      { title: '전에 대신했던 종목', names: take(usedBefore) },
+    ]
+    // 같은 동작 패턴(예: 가슴 밀기)의 다른 기구 — 자주 한 순
+    const pattern = index.byId.get(baseId)?.pattern ?? index.byId.get(subEx.exerciseId)?.pattern
+    if (pattern) {
+      const similar = index.list
+        .filter((e) => e.pattern === pattern)
+        .sort((a, b) => (usage.get(b.id) ?? 0) - (usage.get(a.id) ?? 0))
+        .map((e) => e.name)
+      groups.push({ title: `비슷한 동작 · ${PATTERN_LABEL[pattern]}`, names: take(similar).slice(0, 6) })
+    }
+    return groups.filter((g) => g.names.length > 0)
   })()
+  const inSessionIds = new Set(session.exercises.map((e) => e.exerciseId))
 
   return (
     <OverlayPage variant="modal">
@@ -502,6 +528,7 @@ export function WorkoutScreen() {
             <ExerciseCard
               key={`${ex.exerciseId}-${exIdx}`}
               ex={ex}
+              exercise={index.byId.get(ex.exerciseId)}
               index={exIdx}
               prev={prev}
               routineNote={routineExOf(ex.exerciseId)?.note}
@@ -637,8 +664,11 @@ export function WorkoutScreen() {
               ? '완료한 세트는 원래 종목으로 남고, 남은 세트만 바뀌어요.'
               : '기록에 "○○ 대신"으로 표시돼요.'
           }
-          names={master.map((e) => e.name).filter((n) => n !== subEx.exerciseName)}
+          index={index}
+          excludeIds={new Set([subEx.exerciseId])}
           suggestions={subSuggestions}
+          usage={usage}
+          inSessionIds={inSessionIds}
           onPick={(n) => substitute(subFor, n)}
           onClose={() => setSubFor(null)}
         />
@@ -686,8 +716,9 @@ export function WorkoutScreen() {
       {addSheet && (
         <ExercisePickerSheet
           title="종목 추가"
-          names={master.map((e) => e.name)}
-          inSession={new Set(session.exercises.map((e) => e.exerciseName))}
+          index={index}
+          usage={usage}
+          inSessionIds={inSessionIds}
           onPick={addExercise}
           onClose={() => setAddSheet(false)}
         />
@@ -707,6 +738,7 @@ const OVERLOAD_ICON: Record<OverloadResult['status'], string> = {
 
 function ExerciseCard({
   ex,
+  exercise,
   index,
   prev,
   routineNote,
@@ -726,6 +758,8 @@ function ExerciseCard({
   onRemoveSet,
 }: {
   ex: LoggedExercise
+  /** 종목 정보 (기구 종류 등) — 내 종목이면 없을 수 있음 */
+  exercise?: Exercise
   index: number
   prev: PrevRecord | null
   routineNote?: string
@@ -744,6 +778,8 @@ function ExerciseCard({
   onAddSet: () => void
   onRemoveSet: () => void
 }) {
+  // 0kg = 빈봉은 바벨·스미스(또는 기구 정보 없는 종목)에서만 표시
+  const emptyBar = usesEmptyBar(exercise)
   const overloadBadge = overload && (
     <span className={styles[`ol_${overload.status}`]}>
       {OVERLOAD_ICON[overload.status]} {overload.reason}
@@ -865,13 +901,17 @@ function ExerciseCard({
               <span className={styles.kgCell}>
                 <NumInput
                   decimal
-                  className={set.kg === 0 ? `${styles.numInput} ${styles.numInputTagged}` : styles.numInput}
+                  className={
+                    set.kg === 0 && emptyBar
+                      ? `${styles.numInput} ${styles.numInputTagged}`
+                      : styles.numInput
+                  }
                   value={set.kg}
                   onValueChange={(v) => onUpdateSet(si, { kg: v })}
                   placeholder="맨몸"
                   aria-label={`${set.setNo}세트 무게(kg)`}
                 />
-                {set.kg === 0 && <span className={styles.kgTag}>빈봉</span>}
+                {set.kg === 0 && emptyBar && <span className={styles.kgTag}>빈봉</span>}
               </span>
               <NumInput
                 className={styles.numInput}
@@ -908,90 +948,5 @@ function ExerciseCard({
         </button>
       </div>
     </section>
-  )
-}
-
-// 종목 선택 시트 (추가 / 대체 공용) -------------------------------------------
-
-function ExercisePickerSheet({
-  title,
-  description,
-  names,
-  suggestions = [],
-  inSession,
-  onPick,
-  onClose,
-}: {
-  title: string
-  description?: string
-  names: string[]
-  suggestions?: { title: string; names: string[] }[]
-  inSession?: Set<string>
-  onPick: (name: string) => void
-  onClose: () => void
-}) {
-  const [q, setQ] = useState('')
-  const query = q.trim().toLowerCase()
-  const sorted = [...new Set(names)].sort((a, b) => a.localeCompare(b, 'ko'))
-  const filtered = query ? sorted.filter((n) => n.toLowerCase().includes(query)) : sorted
-  const exact = sorted.some((n) => n.toLowerCase() === query)
-
-  return (
-    <Sheet title={title} description={description} onClose={onClose}>
-      <form
-        className={styles.searchRow}
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (q.trim()) onPick(filtered.length === 1 && !exact ? filtered[0] : q)
-        }}
-      >
-        <Search size={18} className={styles.searchIcon} />
-        <input
-          className={styles.searchInput}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="종목 검색 또는 새 이름"
-          enterKeyHint="done"
-        />
-      </form>
-
-      {query && !exact && (
-        <SheetItem
-          icon={<Plus size={18} />}
-          label={`'${q.trim()}' 새 종목으로`}
-          onClick={() => onPick(q)}
-        />
-      )}
-
-      {!query &&
-        suggestions.map((g) => (
-          <div key={g.title} className={styles.suggestGroup}>
-            <p className={styles.groupTitle}>{g.title}</p>
-            {g.names.map((n) => (
-              <SheetItem
-                key={n}
-                icon={<Repeat size={18} />}
-                label={n}
-                active
-                onClick={() => onPick(n)}
-              />
-            ))}
-          </div>
-        ))}
-
-      {!query && suggestions.length > 0 && <p className={styles.groupTitle}>전체 종목</p>}
-      {filtered.map((n) => (
-        <SheetItem
-          key={n}
-          icon={<Dumbbell size={18} />}
-          label={n}
-          hint={inSession?.has(n) ? '이미 이번 운동에 있어요' : undefined}
-          onClick={() => onPick(n)}
-        />
-      ))}
-      {filtered.length === 0 && !query && (
-        <p className={styles.sheetEmpty}>아직 등록된 종목이 없어요. 이름을 입력해 추가하세요.</p>
-      )}
-    </Sheet>
   )
 }
