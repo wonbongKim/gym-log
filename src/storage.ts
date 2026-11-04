@@ -160,6 +160,34 @@ export const storage = {
 
   keys: KEYS,
 
+  /**
+   * gym-log 데이터 지우기 (기본: 전부). 같은 사이트(github.io)의 다른 앱 데이터는 건드리지 않도록
+   * gymlog_ 키만 지운다. 되돌리기용으로 지우기 전 원본 문자열을 돌려준다.
+   */
+  clear: (keys: Key[] = Object.values(KEYS)): Record<string, string> => {
+    const snapshot: Record<string, string> = {}
+    for (const k of keys) {
+      const raw = localStorage.getItem(k)
+      if (raw != null) snapshot[k] = raw
+      localStorage.removeItem(k)
+      cache.delete(k)
+    }
+    keys.forEach((k) => listeners.get(k)?.forEach((cb) => cb()))
+    return snapshot
+  },
+
+  /** clear()가 돌려준 스냅샷 그대로 되돌리기 */
+  restoreSnapshot: (snapshot: Record<string, string>): void => {
+    const keys = Object.keys(snapshot).filter((k): k is Key =>
+      (Object.values(KEYS) as string[]).includes(k),
+    )
+    for (const k of keys) {
+      localStorage.setItem(k, snapshot[k])
+      cache.delete(k)
+    }
+    keys.forEach((k) => listeners.get(k)?.forEach((cb) => cb()))
+  },
+
   /** JSON 백업 내보내기 */
   exportAll: (): string =>
     JSON.stringify(

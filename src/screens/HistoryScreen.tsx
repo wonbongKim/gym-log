@@ -13,6 +13,7 @@ import {
   Clock,
   Sparkles,
   Eraser,
+  Trash2,
 } from 'lucide-react'
 import { Segmented } from '../components/Segmented'
 import { Sheet, SheetItem } from '../components/Sheet'
@@ -30,7 +31,7 @@ import {
   shortDateLabel,
   weekdayKr,
 } from '../lib/stats'
-import { storage } from '../storage'
+import { KEYS, storage } from '../storage'
 import {
   BackupError,
   backupSummary,
@@ -379,6 +380,50 @@ function DataSheet({ onClose, onShowJson }: { onClose: () => void; onShowJson: (
     toast(`기록 ${res.removed.length}개(${res.range})를 정리했어요`, { type: 'success' })
   }
 
+  /** 데이터 지우기 — 범위 선택(기록만 / 전부) → 백업 여부 → 지우기 (잠깐 되돌리기 가능) */
+  const handleReset = async () => {
+    const routineCount = storage.getRoutines().routines.length
+    const customCount = storage.getExercises().exercises.length
+    const hasSession = !!storage.getSession().session
+    const scope = await choose<'logs' | 'all'>({
+      title: '어떤 데이터를 지울까요?',
+      message:
+        '이 기기에 저장된 gym-log 데이터만 지워요. 지운 데이터는 백업 파일로만 되살릴 수 있어요.',
+      options: [
+        { label: `운동 기록만 지우기 (${logs.length}개, 루틴은 남김)`, value: 'logs', variant: 'ghost' },
+        { label: '전부 지우고 처음 상태로', value: 'all', variant: 'danger' },
+      ],
+    })
+    if (!scope) return
+    if (scope === 'logs' && logs.length === 0 && !hasSession) {
+      toast('지울 운동 기록이 없어요')
+      return
+    }
+    const lines =
+      scope === 'logs'
+        ? [`운동 기록 ${logs.length}개`]
+        : [`운동 기록 ${logs.length}개`, `루틴 ${routineCount}개`, `직접 추가한 종목 ${customCount}개`, '설정(휴식 시간 등)']
+    if (hasSession) lines.push('진행 중인 운동')
+    const how = await choose<'backup' | 'now'>({
+      title: '정말 지울까요?',
+      message: `지워지는 것: ${lines.join(' · ')}\n지운 직후 잠깐은 '되돌리기'로 살릴 수 있어요.`,
+      options: [
+        { label: '백업 받고 지우기', value: 'backup' },
+        { label: '백업 없이 지우기', value: 'now', variant: 'danger' },
+      ],
+    })
+    if (!how) return
+    if (how === 'backup') downloadBackup()
+    const snapshot = storage.clear(scope === 'logs' ? [KEYS.logs, KEYS.session] : undefined)
+    onClose()
+    if (scope === 'all') navigate('/')
+    toast(scope === 'logs' ? '운동 기록을 모두 지웠어요' : '모든 데이터를 지웠어요', {
+      type: 'success',
+      duration: 8000,
+      action: { label: '되돌리기', onClick: () => storage.restoreSnapshot(snapshot) },
+    })
+  }
+
   const handleImportFile = async (file: File) => {
     try {
       const backup = parseBackup(await file.text())
@@ -460,6 +505,13 @@ function DataSheet({ onClose, onShowJson }: { onClose: () => void; onShowJson: (
         label="오래된 기록 정리"
         hint="1년·6개월 이전 또는 가장 오래된 순"
         onClick={handleCleanup}
+      />
+      <SheetItem
+        icon={<Trash2 size={18} />}
+        label="데이터 지우기"
+        hint="운동 기록만, 또는 전부 지우고 처음 상태로"
+        danger
+        onClick={handleReset}
       />
       <input
         ref={fileRef}
