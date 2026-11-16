@@ -112,6 +112,11 @@
   flex-direction: column;
   gap: var(--sp-4);
 }
+/* 높이가 정해진 스크롤 영역이라, 내용이 길면 자식이 줄어들어(overflow: hidden 카드는 잘림) 버린다.
+   줄어들지 않게 막고 넘치는 만큼은 스크롤로 보여 준다. */
+.body > * {
+  flex-shrink: 0;
+}
 
 @keyframes pushIn {
   from {
