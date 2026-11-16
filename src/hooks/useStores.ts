@@ -121,6 +121,15 @@ export function useLogs() {
     })
   }, [])
 
+  /** 기록 하나 고치기 (예: 오늘 메모 추가·수정) */
+  const update = useCallback((id: string, mutate: (log: WorkoutLog) => WorkoutLog) => {
+    const current = storage.getLogs()
+    storage.setLogs({
+      ...current,
+      logs: current.logs.map((l) => (l.id === id ? mutate(l) : l)),
+    })
+  }, [])
+
   /**
    * 특정 종목의 비교 기준(직전) 기록.
    * routineId를 주면 같은 루틴의 최근 수행을 우선하고, 이 종목을 따로 하는
@@ -143,7 +152,7 @@ export function useLogs() {
     [logs],
   )
 
-  return { logs, addLog, remove, lastRecordOf }
+  return { logs, addLog, remove, update, lastRecordOf }
 }
 
 /** 진행 중 운동 세션 훅 */

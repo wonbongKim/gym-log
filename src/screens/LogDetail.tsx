@@ -15,6 +15,7 @@ import {
 import { Button } from '../components/Button'
 import { IconButton, OverlayPage, PageBody, TopBar } from '../components/Page'
 import { Sheet, SheetItem } from '../components/Sheet'
+import { WorkoutNoteSheet } from '../components/NoteSheet'
 import { useDialog } from '../components/DialogProvider'
 import { useClipboard } from '../hooks/useClipboard'
 import { useGoBack } from '../hooks/useGoBack'
@@ -57,10 +58,19 @@ function LogDetail({ log, allLogs }: { log: WorkoutLog; allLogs: WorkoutLog[] })
   const location = useLocation()
   const justFinished = (location.state as { justFinished?: boolean } | null)?.justFinished === true
   const goBack = useGoBack('/history')
-  const { remove, addLog } = useLogs()
+  const { remove, addLog, update } = useLogs()
   const { confirm, toast } = useDialog()
   const { copy } = useClipboard()
   const [menu, setMenu] = useState(false)
+  const [noteOpen, setNoteOpen] = useState(false)
+
+  /** 오늘 메모 저장 (빈 값이면 메모 삭제) */
+  const saveNote = (v: string) =>
+    update(log.id, (l) => {
+      const { note: _old, ...rest } = l
+      void _old
+      return v ? { ...rest, note: v } : rest
+    })
 
   const { totalSets, totalVolume } = logStats(log.exercises)
   const minutes = logMinutes(log)
@@ -150,6 +160,25 @@ function LogDetail({ log, allLogs }: { log: WorkoutLog; allLogs: WorkoutLog[] })
           </div>
         </div>
 
+        {log.note ? (
+          <button
+            className={own.dayNote}
+            onClick={() => setNoteOpen(true)}
+            aria-label={`오늘 운동 메모 수정: ${log.note}`}
+          >
+            <NotebookPen size={15} className={own.dayNoteIcon} />
+            <span className={own.dayNoteBody}>
+              <span className={own.dayNoteLabel}>오늘 메모</span>
+              <span className={own.dayNoteText}>{log.note}</span>
+            </span>
+          </button>
+        ) : (
+          <button className={own.dayNoteAdd} onClick={() => setNoteOpen(true)}>
+            <NotebookPen size={15} /> 오늘 운동 메모 남기기
+            <span className={own.dayNoteAddHint}>헬스장·컨디션·생략한 이유 등</span>
+          </button>
+        )}
+
         {log.exercises.map((ex, i) => {
           const best = exerciseBest(ex.sets)
           const pr = prs.get(ex.exerciseId)
@@ -229,6 +258,14 @@ function LogDetail({ log, allLogs }: { log: WorkoutLog; allLogs: WorkoutLog[] })
           </Button>
         )}
       </PageBody>
+
+      {noteOpen && (
+        <WorkoutNoteSheet
+          value={log.note ?? ''}
+          onSave={saveNote}
+          onClose={() => setNoteOpen(false)}
+        />
+      )}
 
       {menu && (
         <Sheet title={log.routineName} onClose={() => setMenu(false)}>

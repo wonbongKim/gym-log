@@ -23,6 +23,18 @@ export const EXERCISE_NOTE_PRESETS = [
   '다음엔 증량',
 ]
 
+/** 오늘 운동 전체 메모 */
+export const WORKOUT_NOTE_PRESETS = [
+  '다른 헬스장',
+  '컨디션 저하',
+  '수면 부족',
+  '시간 부족',
+  '일부 종목 생략',
+  '근육통 남음',
+  '통증 있음',
+  '컨디션 좋음',
+]
+
 /** 문자열 메모 안에서 프리셋 문구를 토글 (", "로 구분) */
 function togglePhrase(note: string, phrase: string): string {
   const parts = note
@@ -42,6 +54,8 @@ export function NoteSheet({
   value,
   presets,
   placeholder,
+  rows = 3,
+  maxLength = 300,
   onSave,
   onClose,
 }: {
@@ -50,6 +64,8 @@ export function NoteSheet({
   value: string
   presets: string[]
   placeholder?: string
+  rows?: number
+  maxLength?: number
   onSave: (note: string) => void
   onClose: () => void
 }) {
@@ -76,8 +92,8 @@ export function NoteSheet({
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder={placeholder ?? '자유롭게 적어 주세요'}
-        rows={3}
-        maxLength={300}
+        rows={rows}
+        maxLength={maxLength}
       />
       <div className={styles.actions}>
         {value && (
@@ -102,5 +118,30 @@ export function NoteSheet({
         </Button>
       </div>
     </Sheet>
+  )
+}
+
+/** 오늘 운동 전체 메모 시트 (운동 중 · 기록 상세 공용) */
+export function WorkoutNoteSheet({
+  value,
+  onSave,
+  onClose,
+}: {
+  value: string
+  onSave: (note: string) => void
+  onClose: () => void
+}) {
+  return (
+    <NoteSheet
+      title="오늘 운동 메모"
+      description="헬스장·컨디션·시간 등 오늘 운동 전체에 대한 메모예요. 기록과 AI 내보내기에 함께 남아요."
+      value={value}
+      presets={WORKOUT_NOTE_PRESETS}
+      placeholder="예: 회사 근처 헬스장이라 기구가 달랐음, 4시간 자서 전체적으로 무게 낮춤, 시간 없어서 팔 운동 뺌"
+      rows={4}
+      maxLength={500}
+      onSave={onSave}
+      onClose={onClose}
+    />
   )
 }

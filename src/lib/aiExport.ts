@@ -115,6 +115,7 @@ export function buildAiExport(o: ExportOptions) {
       date: l.date,
       routine: l.routineName,
       minutes: logMinutes(l) || undefined,
+      ...(o.includeNotes && l.note ? { dayNote: l.note } : {}),
       exercises: l.exercises
         .filter((e) => validSets(e.sets).length > 0)
         .map((e) => {
@@ -163,6 +164,7 @@ export function buildAiExport(o: ExportOptions) {
         sets: '"무게x횟수" 문자열 배열, 세트 순서대로',
         vsLast: '같은 루틴의 같은 종목 직전 수행 대비 점진적 과부하 판정 (up/same/down: 이유)',
         insteadOf: '원래 종목 대신 수행한 경우 원래 종목 이름',
+        dayNote: '그날 운동 전체 메모 (헬스장 변경, 컨디션, 시간 부족으로 생략 등)',
         e1rm: '추정 1RM (Epley 공식, kg)',
         ...(hasMuscle ? { setsByMuscle: '기간 내 부위별 완료 세트 수 (대체 종목 포함)' } : {}),
       },
@@ -189,7 +191,7 @@ export function buildRawExport(o: ExportOptions) {
     weightRules: WEIGHT_RULES,
     ...(o.includeRoutines ? { routines: o.routines } : {}),
     logs: o.logs.map((l) => ({
-      ...l,
+      ...strip(l),
       exercises: l.exercises.map((e) => ({ ...strip(e), sets: e.sets.map(strip) })),
     })),
   }
@@ -218,7 +220,7 @@ export function analysisPrompt(from: string, to: string): string {
     '',
     '분석해 줘:',
     '1. 종목별로 점진적 과부하가 되고 있는지 (exerciseSummary, workouts[].vsLast 참고)',
-    '2. 정체·후퇴한 종목과 원인 추정 — 메모(note, setNotes)의 통증·가동범위 부족 등도 고려',
+    '2. 정체·후퇴한 종목과 원인 추정 — 그날 메모(dayNote: 컨디션·헬스장 변경·생략 이유)와 종목·세트 메모(note, setNotes)의 통증·가동범위 부족 등도 고려',
     '3. 다음 2주간 종목별 무게·횟수 목표 (빈봉 제외 원판 무게 기준으로)',
     '4. 루틴 구성(부위 균형, 주간 볼륨, 빈도) 개선점 — setsByMuscle(부위별 세트 수)과 기간 참고',
     '',

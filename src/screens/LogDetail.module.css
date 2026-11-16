@@ -197,8 +197,79 @@
 
 .noteRow td {
   padding-top: 0 !important;
+  /* "└ " 뒤로 둘째 줄부터 들여쓰기 */
+  padding-left: calc(var(--sp-4) + 1.1em);
+  text-indent: -1.1em;
   border-top: none !important;
   text-align: left !important;
   color: var(--c-accent);
   font-size: var(--f-xs) !important;
+  line-height: 1.5;
+  /* 한글 단어 중간에서 줄이 바뀌지 않게 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 오늘 운동 전체 메모 */
+.dayNote {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-accent-soft);
+  border: 1px solid rgba(255, 176, 32, 0.28);
+  border-radius: var(--r-lg);
+  text-align: left;
+}
+.dayNote:active {
+  background: rgba(255, 176, 32, 0.2);
+}
+.dayNoteIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--c-accent);
+}
+.dayNoteBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dayNoteLabel {
+  color: var(--c-accent);
+  font-size: var(--f-2xs);
+  font-weight: 800;
+}
+.dayNoteText {
+  color: var(--c-text);
+  font-size: var(--f-sm);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+/* 메모가 없을 때: 눈에 덜 띄는 점선 버튼 */
+.dayNoteAdd {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-2);
+  min-height: 48px;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px dashed var(--c-border-strong);
+  border-radius: var(--r-lg);
+  color: var(--c-text-dim);
+  font-size: var(--f-sm);
+  font-weight: 600;
+  text-align: left;
+}
+.dayNoteAdd:active {
+  background: var(--c-surface-2);
+}
+.dayNoteAddHint {
+  color: var(--c-text-faint);
+  font-size: var(--f-xs);
+  font-weight: 500;
 }

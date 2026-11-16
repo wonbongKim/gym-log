@@ -129,7 +129,7 @@ export function ExportScreen() {
           <SwitchRow label="루틴 포함" checked={withRoutines} onChange={setWithRoutines} />
           <SwitchRow
             label="메모 포함"
-            hint="세트·종목 메모 (가동범위 부족, 통증 등)"
+            hint="오늘 메모(컨디션·헬스장 등) · 종목·세트 메모(가동범위, 통증 등)"
             checked={withNotes}
             onChange={setWithNotes}
           />

@@ -14,6 +14,7 @@ import {
   Sparkles,
   Eraser,
   Trash2,
+  NotebookPen,
 } from 'lucide-react'
 import { Segmented } from '../components/Segmented'
 import { Sheet, SheetItem } from '../components/Sheet'
@@ -278,6 +279,12 @@ function LogsView({ logs }: { logs: WorkoutLog[] }) {
                     {prs > 0 && (
                       <span className={hs.pr}>
                         <Trophy size={12} /> 신기록 {prs}
+                      </span>
+                    )}
+                    {log.note && (
+                      <span className={hs.dayNote}>
+                        <NotebookPen size={12} className={hs.dayNoteIcon} />
+                        <span className={hs.dayNoteText}>{log.note}</span>
                       </span>
                     )}
                   </span>

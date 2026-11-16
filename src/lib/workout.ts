@@ -120,6 +120,7 @@ export function sessionToLog(session: WorkoutSession, mode: SaveMode = 'all'): W
     startedAt: session.startedAt,
     finishedAt: new Date().toISOString(),
     exercises,
+    ...(session.note?.trim() ? { note: session.note.trim() } : {}),
   }
 }
 

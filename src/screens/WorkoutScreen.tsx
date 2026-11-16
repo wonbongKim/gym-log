@@ -27,7 +27,12 @@ import { OverlayPage, PageBody, TopBar, TopBarAction } from '../components/Page'
 import { RestTimer } from '../components/RestTimer'
 import { Sheet, SheetItem } from '../components/Sheet'
 import { SwitchRow } from '../components/Switch'
-import { NoteSheet, SET_NOTE_PRESETS, EXERCISE_NOTE_PRESETS } from '../components/NoteSheet'
+import {
+  NoteSheet,
+  SET_NOTE_PRESETS,
+  EXERCISE_NOTE_PRESETS,
+  WorkoutNoteSheet,
+} from '../components/NoteSheet'
 import { ExercisePickerSheet } from '../components/ExercisePickerSheet'
 import { exerciseKey, findExercise, PATTERN_LABEL, usesEmptyBar } from '../lib/exercises'
 import { useDialog } from '../components/DialogProvider'
@@ -90,6 +95,7 @@ export function WorkoutScreen() {
   const [noteFor, setNoteFor] = useState<NoteTarget | null>(null)
   const [subFor, setSubFor] = useState<number | null>(null)
   const [restSheet, setRestSheet] = useState(false)
+  const [dayNoteOpen, setDayNoteOpen] = useState(false)
   const [addSheet, setAddSheet] = useState(false)
   const cardRefs = useRef<(HTMLElement | null)[]>([])
 
@@ -511,12 +517,30 @@ export function WorkoutScreen() {
             <Timer size={14} /> 휴식 {restLabel(settings.restSeconds)}
             <ChevronDown size={14} />
           </button>
+          {!session.note && (
+            <button className={styles.chipBtn} onClick={() => setDayNoteOpen(true)}>
+              <NotebookPen size={14} /> 오늘 메모
+            </button>
+          )}
           {settings.keepAwake && 'wakeLock' in navigator && (
             <span className={styles.chipInfo}>
               <Sun size={14} /> 화면 켜짐 유지
             </span>
           )}
         </div>
+        {session.note && (
+          <button
+            className={styles.dayNote}
+            onClick={() => setDayNoteOpen(true)}
+            aria-label={`오늘 운동 메모 수정: ${session.note}`}
+          >
+            <NotebookPen size={15} className={styles.dayNoteIcon} />
+            <span className={styles.dayNoteBody}>
+              <span className={styles.dayNoteLabel}>오늘 메모</span>
+              <span className={styles.dayNoteText}>{session.note}</span>
+            </span>
+          </button>
+        )}
         <p className={styles.rule}>
           무게는 원판 kg(빈봉 제외) · <b>0</b> = 빈봉 · 빈칸 = 맨몸 · 세트 번호를 누르면 메모
         </p>
@@ -671,6 +695,14 @@ export function WorkoutScreen() {
           inSessionIds={inSessionIds}
           onPick={(n) => substitute(subFor, n)}
           onClose={() => setSubFor(null)}
+        />
+      )}
+
+      {dayNoteOpen && (
+        <WorkoutNoteSheet
+          value={session.note ?? ''}
+          onSave={(v) => patch((s) => void (s.note = v || undefined))}
+          onClose={() => setDayNoteOpen(false)}
         />
       )}
 

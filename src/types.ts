@@ -130,6 +130,8 @@ export interface WorkoutLog {
   startedAt: string // ISO
   finishedAt: string // ISO
   exercises: LoggedExercise[]
+  /** 오늘 운동 전체 메모 (헬스장 변경, 컨디션, 시간 부족으로 생략 등) */
+  note?: string
 }
 
 export interface LogsStore {
@@ -153,6 +155,8 @@ export interface WorkoutSession {
   exercises: LoggedExercise[]
   /** 진행 중인 휴식 타이머 (앱을 나갔다 와도 유지) */
   rest?: RestTimer | null
+  /** 오늘 운동 전체 메모 — 저장하면 기록(WorkoutLog.note)으로 */
+  note?: string
 }
 
 export interface SessionStore {

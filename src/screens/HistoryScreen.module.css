@@ -262,3 +262,29 @@
   line-height: 1.6;
   word-break: keep-all;
 }
+
+/* 목록의 오늘 메모 미리보기 — 두 줄까지, 전체는 기록 상세에서 */
+.dayNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 2px;
+  color: var(--c-text-dim);
+  font-size: var(--f-xs);
+  line-height: 1.45;
+}
+.dayNoteIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--c-accent);
+}
+.dayNoteText {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
